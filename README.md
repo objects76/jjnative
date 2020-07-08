@@ -17,3 +17,8 @@
 - startKeyMonitor(): bool;
 - pauseKeyMonitor(): bool;
 - resumeKeyMonitor(): bool;
+
+# Usage
+
+- yarn add https://github.com/objects76/jjnative.git
+- yarn add https://github.com/objects76/jjnative.git#<branch/commit/tag>

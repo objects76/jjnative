@@ -3,7 +3,7 @@
 #include <Windows.h>
 #include <napi.h>
 
-bool startKeybdMonitor(void *hwndPtr);
+bool startKeybdMonitor(int64_t hwndNumber);
 bool stopKeybdMonitor();
 bool pauseResumeKeybdMonitor(bool resume);
 
@@ -11,19 +11,18 @@ static Napi::Value startKeyMonitor(const Napi::CallbackInfo &info)
 {
     if (info.Length() != 1)
     {
-        Napi::Error::New(info.Env(), "Buffer object is needed.")
-            .ThrowAsJavaScriptException();
+        Napi::Error::New(info.Env(), "Buffer object is needed.").ThrowAsJavaScriptException();
         return info.Env().Undefined();
     }
-    // if (!info[0].IsArrayBuffer())
-    // {
-    //   Napi::Error::New(info.Env(), "Expected an ArrayBuffer")
-    //       .ThrowAsJavaScriptException();
-    //   return info.Env().Undefined();
-    // }
 
-    auto buf = info[0].As<Napi::Buffer<char>>();
-    auto result = startKeybdMonitor(buf.Data());
+    if (!info[0].IsNumber())
+    {
+        Napi::Error::New(info.Env(), "Expected an Buffer").ThrowAsJavaScriptException();
+        return info.Env().Undefined();
+    }
+
+    auto jsNumber = info[0].As<Napi::Number>();
+    auto result = startKeybdMonitor(jsNumber.Int64Value());
     return Napi::Boolean::New(info.Env(), result);
 }
 

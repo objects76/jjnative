@@ -93,10 +93,15 @@ private:
 };
 
 static std::unique_ptr<LLHook> _keybdMonitor;
-bool startKeybdMonitor(void *hwndPtr)
+bool startKeybdMonitor(int64_t hwndNumber)
 {
-    assert(hwndPtr);
-    HWND hTargetWnd = *((HWND *)hwndPtr);
+    HWND hTargetWnd = (HWND)hwndNumber;
+
+    if (!::IsWindow(hTargetWnd))
+    {
+        log("[E] handle is not window: 0x%x\n", hTargetWnd);
+        return false;
+    }
 
     _keybdMonitor = std::make_unique<LLHook>(hTargetWnd);
     log("install for hwnd.%p: %d(1:ok, 0:fail)\n", hTargetWnd, !!_keybdMonitor);

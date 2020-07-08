@@ -1,12 +1,10 @@
 
 // jjkim, 7/7/2010, initial
-
-
 class Logger {
 
-    enter(msg = '', enable = true) {
-        this.scope.push({ msg, disable: enable });
-        if (enable) {
+    enter(msg = '', use = true) {
+        this.scope.push({ msg, use });
+        if (use) {
             console.log(this._header(), `{ ${msg} ${this._get_caller()}`);
         }
         ++this._level;
@@ -14,8 +12,8 @@ class Logger {
 
     exit(obj = null) {
         --this._level;
-        const { msg, disable: enable } = this.scope.pop();
-        if (enable) {
+        const { msg, use } = this.scope.pop();
+        if (use) {
             console.log(this._header(), `} ${msg} ${this._get_caller()}`);
         }
         return obj;

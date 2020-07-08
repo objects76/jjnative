@@ -4,7 +4,7 @@
   "description": "native for electron",
   "main": "lib/index.js",
   "scripts": {
-    "test": "node examples/test.js",
+    "test": "electron ./examples/index.js",
     "build": "node-gyp build"
   },
   "repository": {
@@ -25,5 +25,8 @@
     "node-addon-api": "^3.0.0"
   },
   "gypfile": true,
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "electron": "^9.1.0"
+  }
 }

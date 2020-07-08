@@ -7,9 +7,22 @@
 
 #include <chrono>
 #include <future>
+#include <cstdlib>
 #include "log.hpp"
 
 using namespace std::chrono_literals;
+
+static bool isDev = false;
+bool moduleInit()
+{
+    if (const char *env = std::getenv("NODE_ENV"))
+    {
+        isDev = strcmp(env, "development") == 0;
+        if (isDev)
+            log("*** development mode ***\n");
+    }
+    return true;
+}
 
 class LLHook
 {
@@ -47,7 +60,8 @@ private:
             case WM_SYSKEYUP:
                 if (keybdhs->vkCode == VK_LWIN || keybdhs->vkCode == VK_RWIN)
                 {
-                    log("winkey block %s\n", ((wParam & 1) ? "UP" : "DOWN"));
+                    if (isDev)
+                        log("winkey block %s\n", ((wParam & 1) ? "UP" : "DOWN"));
                     //if (::GetForegroundWindow() == hTargetWnd)
                     {
                         assert(hTargetWnd);
@@ -77,6 +91,9 @@ private:
             hInstance, 0);
         assert(hookHandle);
 
+        if (isDev)
+            log("monitor started: module=%p, hook=%p \n", hInstance, hookHandle);
+
         MSG msg;
         loopThreadId = ::GetCurrentThreadId();
 
@@ -88,6 +105,9 @@ private:
         }
 
         ::UnhookWindowsHookEx(hookHandle);
+
+        if (isDev)
+            log("monitor stopped \n");
         return 0;
     }
 };
@@ -104,7 +124,8 @@ bool startKeybdMonitor(int64_t hwndNumber)
     }
 
     _keybdMonitor = std::make_unique<LLHook>(hTargetWnd);
-    log("install for hwnd.%p: %d(1:ok, 0:fail)\n", hTargetWnd, !!_keybdMonitor);
+    if (isDev)
+        log("install for hwnd.%p: %d(1:ok, 0:fail)\n", hTargetWnd, !!_keybdMonitor);
     return !!_keybdMonitor;
 }
 

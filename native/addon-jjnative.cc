@@ -6,6 +6,7 @@
 bool startKeybdMonitor(int64_t hwndNumber);
 bool stopKeybdMonitor();
 bool pauseResumeKeybdMonitor(bool resume);
+bool moduleInit();
 
 static Napi::Value startKeyMonitor(const Napi::CallbackInfo &info)
 {
@@ -44,6 +45,7 @@ static Napi::Value resumeKeyMonitor(const Napi::CallbackInfo &info)
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
+    moduleInit();
     exports["startKeyMonitor"] = Napi::Function::New(env, startKeyMonitor);
     exports["stopKeyMonitor"] = Napi::Function::New(env, stopKeyMonitor);
     exports["pauseKeyMonitor"] = Napi::Function::New(env, pauseKeyMonitor);

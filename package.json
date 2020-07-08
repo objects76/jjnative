@@ -1,11 +1,12 @@
 {
   "name": "jjnative",
   "version": "1.0.0",
-  "description": "native for electron",
+  "description": "native support for electron",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "test": "electron ./examples/index.js",
+    "testenv": "cross-env NODE_ENV=development node ./examples/test.js",
+    "testelec": "cross-env NODE_ENV=development electron ./examples/index.js",
     "build": "node-gyp build"
   },
   "repository": {
@@ -28,6 +29,7 @@
   "gypfile": true,
   "private": true,
   "devDependencies": {
+    "cross-env": "^7.0.2",
     "electron": "^9.1.0"
   }
 }

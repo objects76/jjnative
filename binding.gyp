@@ -5,7 +5,7 @@
       "cflags!": [ "-fno-exceptions" ],
       "cflags_cc!": [ "-fno-exceptions" ],
       "cflags_cc+": [ "-std=c++17" ],
-      "sources": [ "native/addon-jjnative.cc", "native/win32-keybd-util.cc" ],
+      "sources": [ "native/*.cc", "native/*.cpp" ],
       "include_dirs": [
         "<!@(node -p \"require('node-addon-api').include\")"
       ],

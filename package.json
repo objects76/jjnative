@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "native for electron",
   "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "test": "electron ./examples/index.js",
     "build": "node-gyp build"

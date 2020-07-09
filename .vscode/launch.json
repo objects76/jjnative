@@ -14,12 +14,23 @@
     },
     // cross-env NODE_ENV=development electron ./examples/index.js
     {
-      "name": "debug electron",
-      "type": "electron",
+      "name": "Electron Main",
+      "type": "node",
       "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/examples/index.js",
-      "outFiles": ["${workspaceFolder}/**/*.js"]
+      "program": "${workspaceFolder}/examples/main.js",
+      "outFiles": ["${workspaceFolder}/**/*.js"],
+      "protocol": "inspector"
+    },
+    {
+      "name": "Electron Renderer",
+      "type": "chrome",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
+      "skipFiles": ["<node_internals>/**"],
+      "runtimeArgs": ["${workspaceFolder}/examples/main.js", "--remote-debugging-port=9222"],
+      "webRoot": "${workspaceRoot}/examples"
     }
   ]
 }

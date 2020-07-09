@@ -90,7 +90,7 @@ private:
                 return _this->LLKeyboardProc(nCode, wParam, lParam);
             },
             hInstance, 0);
-        assert(hookHandle);
+        Assert1(hookHandle, format("errno=%d", GetLastError));
 
         if (isDev)
             log("monitor started: module=%p, hook=%p \n", hInstance, hookHandle);
@@ -130,9 +130,13 @@ bool startKeybdMonitor(int64_t hwndNumber)
 bool stopKeybdMonitor()
 {
     if (_keybdMonitor)
+    {
         _keybdMonitor.reset();
+        return true;
+    }
 
-    return true;
+    //throw_error("No keybd monitor object", __FUNCTION__);
+    return false;
 }
 
 bool pauseResumeKeybdMonitor(bool resume)
@@ -145,6 +149,8 @@ bool pauseResumeKeybdMonitor(bool resume)
             _keybdMonitor->Pause();
         return true;
     }
+
+    //throw_error("No keybd monitor object", __FUNCTION__);
     return false;
 }
 

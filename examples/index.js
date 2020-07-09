@@ -28,8 +28,19 @@ function createMainWindow() {
         addon.pauseKeyMonitor();
     });
 
-    const hwndNumber = addon.util.numberFromBuffer(win.getNativeWindowHandle());
-    addon.startKeyMonitor(hwndNumber + 5);
+    try {
+        addon.pauseKeyMonitor();
+        addon.stopKeyMonitor();
+    } catch (error) {
+        console.error(error);
+    }
+
+    try {
+        const hwndNumber = addon.util.numberFromBuffer(win.getNativeWindowHandle());
+        addon.startKeyMonitor(hwndNumber);
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 app.on('ready', createMainWindow);

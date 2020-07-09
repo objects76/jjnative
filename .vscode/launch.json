@@ -1,0 +1,25 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "debug test.js",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/examples/test.js",
+      "outFiles": ["${workspaceFolder}/**/*.js"]
+    },
+    // cross-env NODE_ENV=development electron ./examples/index.js
+    {
+      "name": "debug electron",
+      "type": "electron",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "program": "${workspaceFolder}/examples/index.js",
+      "outFiles": ["${workspaceFolder}/**/*.js"]
+    }
+  ]
+}

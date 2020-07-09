@@ -16,3 +16,5 @@ void fatal_error(const std::string &msg, const std::string &pos);
         if (!(c))                                               \
             fatal_error("assertion failed: " #c, __FUNCTION__); \
     } while (0)
+
+extern bool isDev;

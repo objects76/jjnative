@@ -16,7 +16,7 @@
 
 ```
 
-- startKeyMonitor(hwnd:number): bool;
+- startKeyMonitor(hwnd:bigint): bool;
 - stopKeyMonitor(): bool;
 - pauseKeyMonitor(): bool;
 - resumeKeyMonitor(): bool;

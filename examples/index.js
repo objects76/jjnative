@@ -36,7 +36,7 @@ function createMainWindow() {
     }
 
     try {
-        const hwndNumber = addon.util.numberFromBuffer(win.getNativeWindowHandle());
+        const hwndNumber = addon.util.bigintFromHandle(win.getNativeWindowHandle());
         addon.startKeyMonitor(hwndNumber);
     } catch (error) {
         console.error(error);

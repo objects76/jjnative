@@ -13,18 +13,6 @@
 
 using namespace std::chrono_literals;
 
-static bool isDev = false;
-bool moduleInit()
-{
-    if (const char *env = std::getenv("NODE_ENV"))
-    {
-        isDev = strcmp(env, "development") == 0;
-        if (isDev)
-            log("*** development mode ***\n");
-    }
-    return true;
-}
-
 class LLHook
 {
 public:
@@ -117,9 +105,11 @@ static std::unique_ptr<LLHook> _keybdMonitor;
 bool startKeybdMonitor(int64_t hwndNumber)
 {
     HWND hTargetWnd = (HWND)hwndNumber;
-    //Assert0(::IsWindow(hTargetWnd));
     if (!::IsWindow(hTargetWnd))
+    {
         throw_error(format("invalid window handle: %p", hTargetWnd), __FUNCTION__);
+        return false;
+    }
 
     _keybdMonitor = std::make_unique<LLHook>(hTargetWnd);
     if (isDev)

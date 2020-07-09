@@ -5,7 +5,7 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "testenv": "cross-env NODE_ENV=development node ./examples/test.js",
+    "test": "cross-env NODE_ENV=development node ./examples/test.js",
     "testelec": "cross-env NODE_ENV=development electron ./examples/index.js",
     "build": "node-gyp build",
     "clean": "node-gyp clean"

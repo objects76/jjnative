@@ -9,6 +9,7 @@
 #include <future>
 #include <cstdlib>
 #include "log.hpp"
+#include "addon-jjnative.h"
 
 using namespace std::chrono_literals;
 
@@ -116,12 +117,9 @@ static std::unique_ptr<LLHook> _keybdMonitor;
 bool startKeybdMonitor(int64_t hwndNumber)
 {
     HWND hTargetWnd = (HWND)hwndNumber;
-
+    //Assert0(::IsWindow(hTargetWnd));
     if (!::IsWindow(hTargetWnd))
-    {
-        log("[E] handle is not window: 0x%x\n", hTargetWnd);
-        return false;
-    }
+        throw_error(format("invalid window handle: %p", hTargetWnd), __FUNCTION__);
 
     _keybdMonitor = std::make_unique<LLHook>(hTargetWnd);
     if (isDev)

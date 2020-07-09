@@ -7,18 +7,27 @@
     stopKeyMonitor: [Function],
     pauseKeyMonitor: [Function],
     resumeKeyMonitor: [Function],
-    path: 'D:\\ElecWS\\try-rv1\\jjnative\\build\\Release\\jjnative.node'
+    path: '...\\build\\Release\\jjnative.node'
+    util {
+      numberFromBuffer: [Function]
+    }
   }
 }
 
 ```
 
-- startKeyMonitor(hwnd:Buffer): bool;
-- startKeyMonitor(): bool;
+- startKeyMonitor(hwnd:number): bool;
+- stopKeyMonitor(): bool;
 - pauseKeyMonitor(): bool;
 - resumeKeyMonitor(): bool;
 
-# Usage
+- util.numberFromBuffer(buffer): number;
+
+# example:
+
+- examples/index.js (electron test)
+
+# source path
 
 - yarn add https://github.com/objects76/jjnative.git
 - yarn add https://github.com/objects76/jjnative.git#<branch/commit/tag>

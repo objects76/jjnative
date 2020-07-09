@@ -29,7 +29,7 @@ function createMainWindow() {
     });
 
     const hwndNumber = addon.util.numberFromBuffer(win.getNativeWindowHandle());
-    addon.startKeyMonitor(hwndNumber);
+    addon.startKeyMonitor(hwndNumber + 5);
 }
 
 app.on('ready', createMainWindow);

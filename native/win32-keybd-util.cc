@@ -8,8 +8,7 @@
 #include <chrono>
 #include <future>
 #include <cstdlib>
-#include "log.hpp"
-#include "addon-jjnative.h"
+#include "log.h"
 
 using namespace std::chrono_literals;
 

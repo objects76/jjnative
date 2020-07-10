@@ -1,14 +1,14 @@
-const L = require('./Logger');
+const logger = require('./Logger');
 
-console.log('render');
+logger.log('render');
 
 function setup_keyevent() {
     document.addEventListener('keydown', (e) => {
-        console.log('keydown:', e);
+        logger.log('keydown:', e);
     });
 
     document.addEventListener('keyup', (e) => {
-        console.log('keyup:', e);
+        logger.log('keyup:', e);
     });
 };
 

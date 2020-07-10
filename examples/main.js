@@ -1,6 +1,6 @@
 const { app, globalShortcut } = require('electron');
 const BrowserWindow = require('electron').BrowserWindow;
-
+const logger = require('./Logger');
 const addon = require('../lib/index');
 
 function createMainWindow() {
@@ -16,7 +16,7 @@ function createMainWindow() {
     win.webContents.openDevTools();
     win.setMenu(null);
 
-    console.log(addon);
+    logger.log(addon);
     win.on('closed', () => {
         addon.stopKeyMonitor();
     });
@@ -32,20 +32,20 @@ function createMainWindow() {
         addon.pauseKeyMonitor();
         addon.stopKeyMonitor();
     } catch (error) {
-        console.error(error);
+        logger.error(error);
     }
 
     try {
         const hwndNumber = addon.util.bigintFromHandle(win.getNativeWindowHandle());
         addon.startKeyMonitor(hwndNumber);
     } catch (error) {
-        console.error(error);
+        logger.error(error);
     }
 }
 
 app.on('ready', createMainWindow);
 app.on('quit', (event, exitCode) => {
-    console.log('quit:', exitCode);
+    logger.log('quit:', exitCode);
 });
 
 app.on('window-all-closed', () => {

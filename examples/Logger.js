@@ -1,11 +1,12 @@
 
 // jjkim, 7/7/2010, initial
+
 class Logger {
 
     enter(msg = '', use = true) {
         this.scope.push({ msg, use });
         if (use) {
-            console.log(this._header(), `{ ${msg} ${this._get_caller()}`);
+            this.logger.log(this._header(), `{ ${msg} ${this._get_caller()}`);
         }
         ++this._level;
     }
@@ -14,20 +15,32 @@ class Logger {
         --this._level;
         const { msg, use } = this.scope.pop();
         if (use) {
-            console.log(this._header(), `} ${msg} ${this._get_caller()}`);
+            this.logger.log(this._header(), `} ${msg} ${this._get_caller()}`);
         }
         return obj;
     }
 
     log(...args) {
-        console.log(this._header(), ...args, `${this._get_caller()}`);
+        this.logger.log(this._header(), ...args, this._get_caller());
+    }
+
+    err(...args) {
+        this.logger.error(this._header(), ...args, this._get_caller());
+    }
+    warn(...args) {
+        this.logger.warn(this._header(), ...args, this._get_caller());
     }
 
     constructor() {
         this._level = 0;
         this.disable_scope = 0;
         this.scope = [];
-        console.log('new Logger...');
+        this.logger = console;
+        try {
+            this.logger = require('electron-log');
+        } catch (error) {
+            this.warn('no electron-log');
+        }
     }
 
     //
@@ -40,12 +53,12 @@ class Logger {
     _get_caller() {
         const lines = new Error().stack.split("\n");
         const caller_line = lines[3];
-        //    at LottoExtractHooks (webpack:///./LottoExtractHooks.jsx?:93:5)
-        const m = /at\s+([^\s]+)((?!:\d).)+:(\d+)/.exec(caller_line);
+        //    at new ExtractHooks (webpack:///./ExtractHooks.jsx?:93:5)
+        const m = /at\s+([^(]+)((?!:\d).)+:(\d+)/.exec(caller_line);
         //console.log(caller_line);
 
-        if (m) {
-            return `at ${m[1]}:${m[3]}`;
+        if (m.length >= 4) {
+            return `at ${m[1].trimEnd()}:${m[3]}`;
         }
         return caller_line;
     }

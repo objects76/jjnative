@@ -7,8 +7,9 @@
   "scripts": {
     "test": "cross-env NODE_ENV=development node ./examples/test.js",
     "testelec": "cross-env NODE_ENV=development electron ./examples/main.js",
-    "build": "node-gyp build",
-    "clean": "node-gyp clean"
+    "node-gyp:build": "node-gyp build",
+    "node-gyp:rebuild": "node-gyp rebuild",
+    "node-gyp:clean": "node-gyp clean"
   },
   "repository": {
     "type": "git",
@@ -25,6 +26,7 @@
   "homepage": "https://github.com/objects76/jjnative#readme",
   "dependencies": {
     "bindings": "^1.5.0",
+    "electron-log": "^4.2.2",
     "node-addon-api": "^3.0.0"
   },
   "gypfile": true,

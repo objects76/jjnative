@@ -18,7 +18,6 @@ class LLHook
 public:
     LLHook(HWND hWnd)
     {
-        LLHook::_this = this;
         LLHook::hTargetWnd = hWnd;
         loopFuture = std::async(std::launch::async, &LLHook::messageLoop, this);
     }
@@ -30,7 +29,6 @@ public:
             loopFuture.wait_for(5s);
             loopFuture.get();
         }
-        LLHook::_this = nullptr;
     }
     void Pause() { pause_hook = true; }
     void Resume() { pause_hook = false; }
@@ -68,10 +66,10 @@ private:
     uint32_t loopThreadId = 0;
     bool pause_hook = false;
     HWND hTargetWnd = nullptr;
-    inline static LLHook *_this = nullptr;
 
     int messageLoop()
     {
+        static auto _this = this;
         HMODULE hInstance = ::GetModuleHandleA(TOSTR(NODE_GYP_MODULE_NAME) ".node");
         auto hookHandle = ::SetWindowsHookExW(
             WH_KEYBOARD_LL, [](int nCode, WPARAM wParam, LPARAM lParam) -> LRESULT {
@@ -80,8 +78,7 @@ private:
             hInstance, 0);
         Assert1(hookHandle, format("errno=%d", GetLastError));
 
-        if (isDev)
-            log("monitor started: module=%p, hook=%p \n", hInstance, hookHandle);
+        devlog("monitor started: module=%p, hook=%p \n", hInstance, hookHandle);
 
         MSG msg;
         loopThreadId = ::GetCurrentThreadId();
@@ -95,8 +92,7 @@ private:
 
         ::UnhookWindowsHookEx(hookHandle);
 
-        if (isDev)
-            log("monitor stopped \n");
+        devlog("monitor stopped \n");
         return 0;
     }
 };
@@ -112,8 +108,7 @@ bool startKeybdMonitor(int64_t hwndNumber)
     }
 
     _keybdMonitor = std::make_unique<LLHook>(hTargetWnd);
-    if (isDev)
-        log("install for hwnd.%p: %d(1:ok, 0:fail)\n", hTargetWnd, !!_keybdMonitor);
+    devlog("install for hwnd.%p: %d(1:ok, 0:fail)\n", hTargetWnd, !!_keybdMonitor);
     return !!_keybdMonitor;
 }
 
@@ -125,7 +120,7 @@ bool stopKeybdMonitor()
         return true;
     }
 
-    //throw_error("No keybd monitor object", __FUNCTION__);
+    devlog("No keybd monitor object at %s\n", __FUNCTION__);
     return false;
 }
 
@@ -140,7 +135,7 @@ bool pauseResumeKeybdMonitor(bool resume)
         return true;
     }
 
-    //throw_error("No keybd monitor object", __FUNCTION__);
+    devlog("No keybd monitor object at %s\n", __FUNCTION__);
     return false;
 }
 

@@ -1,15 +1,25 @@
 
+
+#include <napi.h>
+
+#ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#include <napi.h>
-#include "log.hpp"
-#include "addon-jjnative.h"
+#endif
 
-bool startKeybdMonitor(int64_t hwndNumber);
-bool stopKeybdMonitor();
-bool pauseResumeKeybdMonitor(bool resume);
+//
+// { util codes
+//
+#include "log.h"
 
+#define expect_type(obj, type)                                            \
+    if ((obj).Type() != type)                                             \
+    {                                                                     \
+        throw_error("Expected " #type, __FUNCTION__ ":" TOSTR(__LINE__)); \
+        return Napi::Env(_env).Undefined();                               \
+    }
 static thread_local napi_env _env = nullptr;
+
 void fatal_error(const std::string &msg, const std::string &pos)
 {
     Napi::Error::Fatal(pos.c_str(), msg.c_str());
@@ -24,6 +34,13 @@ void throw_error(const std::string &msg, const std::string &pos)
         Napi::Error::New(_env, errmsg.c_str()).ThrowAsJavaScriptException();
     }
 }
+//
+// } util codes
+//
+
+bool startKeybdMonitor(int64_t hwndNumber);
+bool stopKeybdMonitor();
+bool pauseResumeKeybdMonitor(bool resume);
 
 static Napi::Value startKeyMonitor(const Napi::CallbackInfo &info)
 {
@@ -34,16 +51,11 @@ static Napi::Value startKeyMonitor(const Napi::CallbackInfo &info)
         return info.Env().Undefined();
     }
 
-    if (info[0].Type() != napi_valuetype::napi_bigint)
-    {
-        Napi::Error::New(info.Env(), "Expected a bigint").ThrowAsJavaScriptException();
-        return info.Env().Undefined();
-    }
+    expect_type(info[0], napi_valuetype::napi_bigint);
 
     bool lossless = false;
     auto jsNumber = info[0].As<Napi::BigInt>();
-    if (isDev)
-        log("number= 0x%x, lossless=%d\n", jsNumber.Uint64Value(&lossless), lossless);
+    devlog("number= 0x%x, lossless=%d\n", jsNumber.Uint64Value(&lossless), lossless);
 
     auto result = startKeybdMonitor(jsNumber.Uint64Value(&lossless));
 
@@ -69,14 +81,12 @@ static Napi::Value resumeKeyMonitor(const Napi::CallbackInfo &info)
     return Napi::Boolean::New(info.Env(), result);
 }
 
-bool isDev = false;
 static Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     if (const char *env = std::getenv("NODE_ENV"))
     {
         isDev = strcmp(env, "development") == 0;
-        if (isDev)
-            log("*** development mode ***\n");
+        devlog("*** development mode ***\n");
     }
 
     exports["startKeyMonitor"] = Napi::Function::New(env, startKeyMonitor);

@@ -1,9 +1,16 @@
 
-#pragma once
+#include "log.h"
 #include <stdarg.h>
 #include <string>
 
-inline std::string format(const char *fmt, ...)
+#ifdef WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
+bool isDev = false;
+
+std::string format(const char *fmt, ...)
 {
     char buffer[4096];
     va_list args;
@@ -14,7 +21,7 @@ inline std::string format(const char *fmt, ...)
     return std::string(buffer, n);
 }
 
-inline void log(const char *fmt, ...)
+void log(const char *fmt, ...)
 {
     char buffer[4096];
     va_list args;
@@ -28,5 +35,3 @@ inline void log(const char *fmt, ...)
 #endif
 }
 
-#define TOSTR2(s) #s
-#define TOSTR(s) TOSTR2(s)

@@ -2,16 +2,23 @@ const { app, globalShortcut } = require('electron');
 const BrowserWindow = require('electron').BrowserWindow;
 const logger = require('./Logger');
 const addon = require('../lib/index');
+const windowStateKeeper = require('electron-window-state')
+
 
 function createMainWindow() {
+
+    let state = windowStateKeeper({});
+
     const win = new BrowserWindow({
+        x: state.x, y: state.y,
+        width: state.width, height: state.height,
         webPreferences: {
             nodeIntegration: true
         },
     });
     //win.loadURL('https://github.com');
     win.loadURL(`file://${__dirname}/index.html`);
-
+    state.manage(win);
 
     win.webContents.openDevTools();
     win.setMenu(null);

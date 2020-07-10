@@ -31,6 +31,7 @@
   "private": true,
   "devDependencies": {
     "cross-env": "^7.0.2",
-    "electron": "^9.1.0"
+    "electron": "^9.1.0",
+    "typescript": "^3.9.6"
   }
 }

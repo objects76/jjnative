@@ -52,7 +52,7 @@ private:
         // si.wShowWindow = SW_HIDE;
 
         // char cmdbuf[512];
-        // strcpy_s(cmdbuf, sizeof(cmdbuf), disable ? R"(reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System /f /v DisableLockWorkstation /t REG_DWORD /d 1)" : R"(reg delete HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System /f /v DisableLockWorkstation)");
+        // strcpy_s(cmdbuf, sizeof(cmdbuf), disable ? R"(reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System /v DisableLockWorkstation /t REG_DWORD /d 1 /f)" : R"(reg delete HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System /v DisableLockWorkstation /f)");
 
         // PROCESS_INFORMATION procInfo = {0};
         // uint32_t createFlags = CREATE_NEW_CONSOLE * 0 | CREATE_NO_WINDOW; // without window.

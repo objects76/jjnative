@@ -18,6 +18,7 @@
         throw_error("Expected " #type, __FUNCTION__ ":" TOSTR(__LINE__)); \
         return Napi::Env(_env).Undefined();                               \
     }
+    
 static thread_local napi_env _env = nullptr;
 
 void fatal_error(const std::string &msg, const std::string &pos)

@@ -29,10 +29,43 @@ public:
             loopFuture.get();
         }
     }
-    void Pause() { pause_hook = true; }
-    void Resume() { pause_hook = false; }
+    void Pause()
+    {
+        pause_hook = true;
+        DisableLockWorkstation(false);
+    }
+    void Resume()
+    {
+        pause_hook = false;
+        DisableLockWorkstation(true);
+    }
+
+    // Windows Registry Editor Version 5.00
+    // [HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Policies\System]
+    // "DisableLockWorkstation"=dword:00000000
 
 private:
+    void DisableLockWorkstation(bool disable)
+    {
+        // STARTUPINFO si = {sizeof(STARTUPINFO)};
+        // si.dwFlags = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+        // si.wShowWindow = SW_HIDE;
+
+        // char cmdbuf[512];
+        // strcpy_s(cmdbuf, sizeof(cmdbuf), disable ? R"(reg add HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System /f /v DisableLockWorkstation /t REG_DWORD /d 1)" : R"(reg delete HKCU\Software\Microsoft\Windows\CurrentVersion\Policies\System /f /v DisableLockWorkstation)");
+
+        // PROCESS_INFORMATION procInfo = {0};
+        // uint32_t createFlags = CREATE_NEW_CONSOLE * 0 | CREATE_NO_WINDOW; // without window.
+        // const char *curDir = nullptr;
+        // if (!CreateProcessA(nullptr, cmdbuf, nullptr, nullptr, TRUE, createFlags, nullptr, curDir, &si, &procInfo))
+        // {
+        //     log("registry op: errno=%d\n", GetLastError());
+        // }
+        // ::WaitForSingleObject(procInfo.hProcess, INFINITE);
+        // ::CloseHandle(procInfo.hThread);
+        // ::CloseHandle(procInfo.hProcess);
+    }
+
     LRESULT CALLBACK LLKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         if (nCode == HC_ACTION && pause_hook == false)
@@ -78,6 +111,7 @@ private:
         Assert1(hookHandle, format("errno=%d", GetLastError));
 
         devlog("monitor started: module=%p, hook=%p \n", hInstance, hookHandle);
+        Resume();
 
         MSG msg;
         loopThreadId = ::GetCurrentThreadId();

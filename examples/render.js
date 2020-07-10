@@ -13,7 +13,7 @@ function setup_keyevent() {
 };
 
 window.onload = function () {
-    L.log('onload');
+    logger.log('onload');
     setup_keyevent();
 }
 

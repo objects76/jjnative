@@ -6,7 +6,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "test": "cross-env NODE_ENV=development node ./examples/test.js",
-    "testelec": "cross-env NODE_ENV=development electron ./examples/main.js",
+    "testelec": "node-gyp build && cross-env NODE_ENV=development electron ./examples/main.js",
     "node-gyp:build": "node-gyp build",
     "node-gyp:rebuild": "node-gyp rebuild",
     "node-gyp:clean": "node-gyp clean"

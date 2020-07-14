@@ -10,7 +10,8 @@
     "build": "tsc && yarn node-gyp:rebuild",
     "node-gyp:build": "node-gyp build",
     "node-gyp:rebuild": "node-gyp rebuild",
-    "node-gyp:clean": "node-gyp clean"
+    "node-gyp:clean": "node-gyp clean",
+    "preinstall": "npm i node-addon-api"
   },
   "repository": {
     "type": "git",

@@ -7,7 +7,8 @@
       "cflags_cc+": [ "-std=c++17" ],
       "sources": [ "<!@(ls -1 native/*.c*)" ],
       "include_dirs": [
-        "<!@(node -p \"require('node-addon-api').include\")"
+        "<!@(node -p \"require('node-addon-api').include\")",
+        "../node-addon-api"
       ],
       "defines": [ "NAPI_DISABLE_CPP_EXCEPTIONS" ],
       "msvs_settings": {

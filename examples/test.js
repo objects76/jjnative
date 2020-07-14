@@ -1,7 +1,8 @@
 
 
-const jjnative = require('../lib/index');
+const jjnative = require('../dist/index');
 const logger = require('./Logger');
+
 
 function test_main() {
     logger.log('node version = ', process.versions.node);

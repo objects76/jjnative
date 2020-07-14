@@ -1,7 +1,7 @@
 const { app, globalShortcut } = require('electron');
 const BrowserWindow = require('electron').BrowserWindow;
 const logger = require('./Logger');
-const addon = require('../lib/index');
+const addon = require('../dist/index');
 const windowStateKeeper = require('electron-window-state')
 
 

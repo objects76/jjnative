@@ -2,11 +2,12 @@
   "name": "jjnative",
   "version": "1.0.0",
   "description": "native support for electron",
-  "main": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "test": "cross-env NODE_ENV=development node ./examples/test.js",
     "testelec": "node-gyp build && cross-env NODE_ENV=development electron ./examples/main.js",
+    "build": "tsc && yarn node-gyp:rebuild",
     "node-gyp:build": "node-gyp build",
     "node-gyp:rebuild": "node-gyp rebuild",
     "node-gyp:clean": "node-gyp clean"

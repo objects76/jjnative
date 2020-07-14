@@ -81,6 +81,7 @@ class Logger {
 
 const L = new Logger();
 module.exports = L;
+//module.exports = console;
 
 module.exports.getMethods = (obj) => {
     let properties = new Set();

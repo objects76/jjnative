@@ -1,4 +1,9 @@
-module.exports = require("bindings")("jjnative.node");
+interface IKeyboard {
+  startKeyMonitor(hwnd: bigint): boolean;
+  stopKeyMonitor(): boolean;
+  pauseKeyMonitor(): boolean;
+  resumeKeyMonitor(): boolean;
+}
 
 function bigintFromHandle(handle: Buffer) {
   // handle:Buffer
@@ -12,6 +17,13 @@ function bigintFromHandle(handle: Buffer) {
   return n;
 }
 
-module.exports.util = {
+// helper functions.
+export default {
   bigintFromHandle,
 };
+
+const addon = {
+  key: require("bindings")("jjnative.node") as IKeyboard,
+};
+
+export { addon };

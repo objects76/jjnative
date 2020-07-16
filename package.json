@@ -7,7 +7,7 @@
   "scripts": {
     "test": "node-gyp build && tsc && cross-env NODE_ENV=development node ./examples/test.js",
     "test2": "node-gyp build && cross-env NODE_ENV=development ts-node ./examples/test2.ts",
-    "testelec": "node-gyp build && cross-env NODE_ENV=development electron ./examples/main.js",
+    "testelec": "node-gyp build && tsc && cross-env NODE_ENV=development electron ./examples/main.js",
     "build": "tsc && yarn node-gyp:rebuild",
     "config": "node-gyp clean && node-gyp rebuild",
     "preinstall": "npm i node-addon-api"

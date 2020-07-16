@@ -12,8 +12,7 @@ public:
         Napi::Function ctor = DefineClass(env, "NativeAddon", {
             InstanceMethod("tryCallByStoredReference", &NativeAddon::TryCallByStoredReference), 
             InstanceMethod("tryCallByStoredFunction", &NativeAddon::TryCallByStoredFunction),
-            //StaticMethod("NativeAddon_dump1", &NativeAddon::Dump),
-            //StaticMethod("NativeAddon_dump2", &NativeAddon::Dump),
+            StaticMethod("staticMethod1", &NativeAddon::Dump),
         });
 
 
@@ -22,19 +21,16 @@ public:
         constructor.SuppressDestruct();
 
         exports["NativeAddon"] = ctor;
-        exports["dumpNativeAddon"] = Napi::Function::New(env, &NativeAddon::Dump);
+        //exports["dumpNativeAddon"] = Napi::Function::New(env, &NativeAddon::Dump);
         return exports;
     }
     NativeAddon(const Napi::CallbackInfo &info);
-
-    // static NativeAddon* Unwrap(Napi::Value v) {
-    //     return Napi::ObjectWrap<NativeAddon>::Unwrap(v.As<Napi::Object>());
-    // }
-
     
     static void Dump(const Napi::CallbackInfo &info) {
-        NativeAddon* _this = ::Unwrap<NativeAddon>(info[0]);
-        LOG("dump: jsfnref=%p, jsfn=%p", &_this->jsFnRef, &_this->jsFn);
+        auto _this = AsObj<NativeAddon>(info[0]);
+        //std::string arg = info[1].As<Napi::String>().Utf8Value();
+        auto arg = AsArg<std::string>(info[1]);
+        LOG("dump: jsfnref=%p, jsfn=%p: %s", &_this->jsFnRef, &_this->jsFn, arg.c_str());
     }
 
 

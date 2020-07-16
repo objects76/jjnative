@@ -46,10 +46,10 @@ void fatal_error(const std::string &msg, const std::string &pos);
 #define CONCAT_(X,Y)	X##Y
 #define CONCAT(X,Y)		CONCAT_(X,Y)
 
-#define LOG(...) { \
+#define LOG(...) do{ \
         log(__VA_ARGS__);                        \
         log(" at %s:%d\n", __basename__, __LINE__); \
-    }
+    } while(0)
 
 #define __basename__	([]{ constexpr auto x = klog::filename(__FILE__); return x; }())
 namespace klog {

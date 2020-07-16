@@ -1,5 +1,5 @@
 /// <reference types="node" />
-interface NativeAddon {
+export interface NativeAddon {
     tryCallByStoredReference(): string;
     tryCallByStoredFunction(): string;
 }
@@ -13,7 +13,7 @@ interface IAddon {
     NativeAddon: {
         new (fnref: Function, fn: Function): NativeAddon;
     };
-    dumpNativeAddon(inst: NativeAddon): void;
+    ArrayBufferArgument(buf: ArrayBuffer): number;
 }
 declare function bigintFromHandle(handle: Buffer): bigint;
 declare const _default: IAddon;

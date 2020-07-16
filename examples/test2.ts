@@ -1,8 +1,7 @@
-import addon, { bigintFromHandle } from "../lib/index";
+import addon, { bigintFromHandle, NativeAddon } from "../lib/index";
 
 const logger = require("./Logger.js");
-const getMethods = logger.getMethods;
-const getStaticMethods = logger.getStaticMethods;
+
 
 function test_main() {
   logger.log("node version = ", process.versions.node);
@@ -22,55 +21,42 @@ function test_main() {
 }
 //test_main();
 
-function dumpObject(obj: Object) {
-  logger.log(obj.constructor.name);
-  console.log("Object.values()");
-  console.log(Object.values(obj));
-  console.log(Object.getPrototypeOf(obj));
-  console.log(Object.getOwnPropertyNames(obj));
-
-  logger.log("ctor methods:", getStaticMethods(obj));
-  logger.log("call static method:");
-
-  // let properties = new Set();
-  // for (let cur = obj.constructor; cur; cur = Object.getPrototypeOf(cur)) {
-  //   //console.log(Object.getOwnPropertyNames(cur));
-  //   Object.getOwnPropertyNames(cur).map(item => properties.add(item));
-  // }
-
-  // logger.log('static method from instance');
-  // logger.log('static dump=', typeof (obj.constructor as any)['dumpx']);
-  // logger.log((obj.constructor as any).toString());
-
-  // logger.log('call static method from instance');
-  // logger.log((obj.constructor as any).dump(obj));
-
-  // logger.log([...properties.keys()]);
-  //return [...properties.keys()].filter((item) => typeof obj[item] === "function");
-}
 
 async function test_native() {
 
-  // logger.log("result=", await addon.getPrimeAsync());
-  // logger.log(addon.getPrimeSync());
+  // passing array test
+  {
+    const array = new Int32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+    try {
+      logger.log("ArrayBufferArgument=", addon.ArrayBufferArgument(array.buffer));
 
+    } catch (error) {
+      console.error(error);
+    }
+    return;
+
+  }
+
+  // promise test.
+  logger.log("result=", await addon.getPrimeAsync());
+  logger.log(addon.getPrimeSync());
+
+  // class from addon.
   const obj = new addon.NativeAddon(
     () => { console.log('Hi! I\'m a JSRef function!') },
     () => { console.log('Hi! I\'m a JS function!') }
   );
-  //console.log(getMethods(obj));
 
-  dumpObject(obj);
-  return;
-
-  addon.dumpNativeAddon(obj);
-
-  const ITERATIONS = 5
-  for (let i = 0; i < ITERATIONS; i++) {
-    logger.log(obj.tryCallByStoredReference());
+  // static member funcion test.
+  (addon.NativeAddon as any).staticMethod1(obj, "using staticMethod1");
+  try {
+    (addon.NativeAddon as any).staticMethod_Invalid(obj, "using staticMethod_Invalid");
+  } catch (error) {
+    console.error(error);
   }
 
-
+  // member function test.
+  logger.log(obj.tryCallByStoredReference());
   try {
     //logger.log(obj.tryCallByStoredFunction());
   } catch (err) {

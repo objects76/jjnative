@@ -1,17 +1,13 @@
 
 
 // defined in addon(c++).
-interface NativeAddon {
+export interface NativeAddon {
   tryCallByStoredReference(): string;
   tryCallByStoredFunction(): string;
-  //static dump(inst: NativeAddon): void; // how to add static Native::dump(...) function.
+  //static staticMethod1(obj: NativeAddon, msg: string): void;
 }
-
-// class for just type information.
-// export class NativeAddon {
-//   tryCallByStoredReference(): string { return "mockup code"; }
-//   tryCallByStoredFunction(): string { return "mockup code"; }
-//   static dump(inst: NativeAddon): void { console.error("static mockup"); }
+// export namespace NativeAddon {
+//   export function staticMethod1(obj: NativeAddon, msg: string): void { console.log("skeleton"); }
 // }
 
 interface IAddon {
@@ -28,8 +24,8 @@ interface IAddon {
   NativeAddon: {
     new(fnref: Function, fn: Function): NativeAddon
   }
-  dumpNativeAddon(inst: NativeAddon): void;
 
+  ArrayBufferArgument(buf: ArrayBuffer): number;
 }
 
 

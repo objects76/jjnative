@@ -60,26 +60,26 @@ static Napi::Value startKeyMonitor(const Napi::CallbackInfo &info)
 
     auto result = startKeybdMonitor(jsNumber.Uint64Value(&lossless));
 
-    return Napi::Boolean::New(info.Env(), result);
+    return Napi::Value::From(info.Env(), result);
 }
 
 static Napi::Value stopKeyMonitor(const Napi::CallbackInfo &info)
 {
     _env = info.Env();
     auto result = stopKeybdMonitor();
-    return Napi::Boolean::New(info.Env(), result);
+    return Napi::Value::From(info.Env(), result);
 }
 static Napi::Value pauseKeyMonitor(const Napi::CallbackInfo &info)
 {
     _env = info.Env();
     auto result = pauseResumeKeybdMonitor(false);
-    return Napi::Boolean::New(info.Env(), result);
+    return Napi::Value::From(info.Env(), result);
 }
 static Napi::Value resumeKeyMonitor(const Napi::CallbackInfo &info)
 {
     _env = info.Env();
     auto result = pauseResumeKeybdMonitor(true);
-    return Napi::Boolean::New(info.Env(), result);
+    return Napi::Value::From(info.Env(), result);
 }
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports)
@@ -101,7 +101,11 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
 
     // export class from native.
     Napi::Object Register_NativeAddon(Napi::Env env, Napi::Object exports); // native-class.cc
-    return Register_NativeAddon(env, exports);
+    exports = Register_NativeAddon(env, exports);
+
+    // arguments.cc
+    Napi::Value ArrayBufferArgument(const Napi::CallbackInfo &info);
+    exports["ArrayBufferArgument"] = Napi::Function::New(env, ArrayBufferArgument);
 
     return exports;
 }

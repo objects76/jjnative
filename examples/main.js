@@ -1,9 +1,12 @@
+const windowStateKeeper = require('electron-window-state')
 const { app, globalShortcut } = require('electron');
 const BrowserWindow = require('electron').BrowserWindow;
 const logger = require('./Logger');
-const addon = require('../dist/index');
-const windowStateKeeper = require('electron-window-state')
 
+const addonBase = require('../dist/index');
+const addon = require("bindings")("jjnative.node");
+
+logger.log(addon);
 
 function createMainWindow() {
 
@@ -23,7 +26,7 @@ function createMainWindow() {
     win.webContents.openDevTools();
     win.setMenu(null);
 
-    logger.log(addon);
+
     win.on('closed', () => {
         addon.stopKeyMonitor();
     });
@@ -43,7 +46,7 @@ function createMainWindow() {
     }
 
     try {
-        const hwndNumber = addon.util.bigintFromHandle(win.getNativeWindowHandle());
+        const hwndNumber = addonBase.bigintFromHandle(win.getNativeWindowHandle());
         addon.startKeyMonitor(hwndNumber);
     } catch (error) {
         logger.error(error);

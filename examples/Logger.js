@@ -24,7 +24,7 @@ class Logger {
         this.logger.log(this._header(), ...args, this._get_caller());
     }
 
-    err(...args) {
+    error(...args) {
         this.logger.error(this._header(), ...args, this._get_caller());
     }
     warn(...args) {
@@ -93,11 +93,29 @@ module.exports.getMethods = (obj) => {
     return [...properties.keys()].filter((item) => typeof obj[item] === "function");
 };
 
-module.exports.getStaticMethods = (obj) => {
-    let properties = new Set();
-    for (let cur = obj.constructor; cur; cur = Object.getPrototypeOf(cur)) {
-        Object.getOwnPropertyNames(cur).map((item) => properties.add(item));
+module.exports.getObjectInfo = (obj) => {
+
+    function getFuncs(obj, predefined) {
+        let properties = new Set();
+        for (let cur = obj; cur; cur = Object.getPrototypeOf(cur)) {
+            const names = Object.getOwnPropertyNames(cur);
+            for (const name of names) {
+                if (!predefined.has(name))
+                    properties.add(name);
+            }
+        };
+        return ([...properties.keys()].filter((item) => typeof obj[item] === "function")).join('\n    ')
     }
 
-    return [...properties.keys()].filter((item) => typeof obj[item] === "function");
+    const predefined = new Set([
+        'name', 'arguments', 'caller', 'prototype', 'arguments', 'apply', 'bind', 'call',
+        '__defineGetter__', '__defineSetter__', 'hasOwnProperty', '__lookupGetter__', '__lookupSetter__', 'isPrototypeOf', 'propertyIsEnumerable',
+        'toString', 'toLocalString'
+    ]);
+
+    const memfuncs = getFuncs(obj, predefined);
+
+    const cls = obj.constructor;
+    const staticfuncs = getFuncs(cls, predefined);
+    return `[${cls.name}]\nmemberfunc:\n    ${memfuncs}\nstaticfunc:\n    ${staticfuncs}`;
 };

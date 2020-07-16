@@ -77,8 +77,10 @@ private:
             case WM_SYSKEYDOWN:
             case WM_KEYUP:
             case WM_SYSKEYUP:
-                if (keybdhs->vkCode == VK_LWIN || keybdhs->vkCode == VK_RWIN)
-                {
+                switch (keybdhs->vkCode) {
+                case VK_LWIN: case VK_RWIN:
+                case VK_LMENU: case VK_RMENU:
+                case VK_LCONTROL: case VK_RCONTROL:
                     if (isDev)
                         log("winkey block %s\n", ((wParam & 1) ? "UP" : "DOWN"));
                     //if (::GetForegroundWindow() == hTargetWnd)

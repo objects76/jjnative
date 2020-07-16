@@ -75,4 +75,9 @@ namespace klog {
 
 }
 
-#define FNSCOPE()		klog::FnScope190604 CONCAT(fn190604,__LINE__)(__FUNCTION__)
+#define FNSCOPE()		    klog::FnScope190604 CONCAT(fn190604,__LINE__)(__FUNCTION__)
+#ifdef WIN32
+#define LogOnFalse(op)      do{ if (!(op)) LOG("'%s' failed: errno=%d", #op, ::GetLastError()); } while(0)
+#else
+#define LogOnFalse(op)      do{ if (!(op)) LOG("'%s' failed: errno=%d", #op, errno); } while(0)
+#endif

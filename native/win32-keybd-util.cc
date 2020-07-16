@@ -10,7 +10,10 @@
 #include <cstdlib>
 #include "log.h"
 
+#include <initializer_list>
+
 using namespace std::chrono_literals;
+
 
 class LLHook
 {
@@ -18,15 +21,22 @@ public:
     LLHook() = default;
     ~LLHook()
     {
-        ::PostThreadMessageW(loopThreadId, WM_QUIT, 0, 0);
+        if (loopThreadId)
+            LogOnFalse(::PostThreadMessageW(loopThreadId, WM_QUIT, 0, 0));
+
         if (loopFuture.valid())
         {
-            loopFuture.wait_for(5s);
-            loopFuture.get();
+            auto state = loopFuture.wait_for(5s);
+            if (state == std::future_status::ready)
+                loopFuture.get();
+            else {
+                const char* name[] = {"ready", "timeout", "deffered"};
+                log("wait failed: %s\n", name[(int)state]);
+            }
         }
         
         if (hKeyHook)
-            ::UnhookWindowsHookEx(hKeyHook);
+            LogOnFalse(::UnhookWindowsHookEx(hKeyHook));
     }
     void Pause()
     {
@@ -67,22 +77,21 @@ private:
     {
         if (nCode == HC_ACTION && pause_hook == false)
         {
-            auto keybdhs = (KBDLLHOOKSTRUCT *)lParam;
             switch (wParam)
             {
             case WM_KEYDOWN:
             case WM_SYSKEYDOWN:
             case WM_KEYUP:
             case WM_SYSKEYUP:
-                switch (keybdhs->vkCode) {
+                switch (auto vkCode = ((KBDLLHOOKSTRUCT *)lParam)->vkCode) {
                 case VK_LWIN: case VK_RWIN:
                 case VK_LMENU: case VK_RMENU:
                 case VK_LCONTROL: case VK_RCONTROL:
-                    if (isDev)
-                        log("key.%x block %s\n", keybdhs->vkCode, ((wParam & 1) ? "UP" : "DOWN"));
-                    assert(hTargetWnd);
                     const bool keyup = !!(wParam & 1);
-                    ::PostMessageA(hTargetWnd, wParam, keybdhs->vkCode, keyup ? 0xc15b0001 : 0x415b0001);
+                    if (isDev)
+                        log("key.%x block %s\n", vkCode, (keyup ? "UP" : "DOWN"));
+                    assert(hTargetWnd);
+                    LogOnFalse(PostMessageW(hTargetWnd, wParam, vkCode, keyup ? 0xc15b0001 : 0x415b0001));
                     return TRUE;
                 }
             }
@@ -96,6 +105,9 @@ private:
     HWND hTargetWnd = nullptr;
     HHOOK hKeyHook = nullptr;
 };
+
+
+
 
 static std::unique_ptr<LLHook> _keybdMonitor;
 bool startKeybdMonitor(int64_t hwndNumber)

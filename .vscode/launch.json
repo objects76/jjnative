@@ -5,9 +5,13 @@
       "name": "debug test.js",
       "type": "node",
       "request": "launch",
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
       "program": "${workspaceFolder}/examples/test.js",
-      "outFiles": ["${workspaceFolder}/**/*.js"]
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ]
     },
     // cross-env NODE_ENV=development electron ./examples/index.js
     {
@@ -15,9 +19,13 @@
       "type": "node",
       "request": "launch",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-      "skipFiles": ["<node_internals>/**"],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
       "program": "${workspaceFolder}/examples/main.js",
-      "outFiles": ["${workspaceFolder}/**/*.js"],
+      "outFiles": [
+        "${workspaceFolder}/**/*.js"
+      ],
       "protocol": "inspector"
     },
     {
@@ -25,8 +33,13 @@
       "type": "chrome",
       "request": "launch",
       "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron",
-      "skipFiles": ["<node_internals>/**"],
-      "runtimeArgs": ["${workspaceFolder}/examples/main.js", "--remote-debugging-port=9222"],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "runtimeArgs": [
+        "${workspaceFolder}/examples/main.js",
+        "--remote-debugging-port=9222"
+      ],
       "webRoot": "${workspaceRoot}/examples"
     }
   ]

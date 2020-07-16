@@ -18,7 +18,7 @@
         throw_error("Expected " #type, __FUNCTION__ ":" TOSTR(__LINE__)); \
         return Napi::Env(_env).Undefined();                               \
     }
-    
+
 static thread_local napi_env _env = nullptr;
 
 void fatal_error(const std::string &msg, const std::string &pos)
@@ -84,16 +84,25 @@ static Napi::Value resumeKeyMonitor(const Napi::CallbackInfo &info)
 
 static Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
-    if (const char *env = std::getenv("NODE_ENV"))
-    {
-        isDev = strcmp(env, "development") == 0;
-        devlog("*** development mode ***\n");
-    }
+    const char *nodeenv = std::getenv("NODE_ENV");
+    isDev = nodeenv && strcmp(nodeenv, "development") == 0;
+    devlog("*** development mode ***\n");
 
     exports["startKeyMonitor"] = Napi::Function::New(env, startKeyMonitor);
     exports["stopKeyMonitor"] = Napi::Function::New(env, stopKeyMonitor);
     exports["pauseKeyMonitor"] = Napi::Function::New(env, pauseKeyMonitor);
     exports["resumeKeyMonitor"] = Napi::Function::New(env, resumeKeyMonitor);
+
+    // test
+    Napi::Value getPrimeAsync(const Napi::CallbackInfo &info); // promise.cc
+    Napi::Value getPrimeSync(const Napi::CallbackInfo &info);
+    exports["getPrimeAsync"] = Napi::Function::New(env, getPrimeAsync);
+    exports["getPrimeSync"] = Napi::Function::New(env, getPrimeSync);
+
+    // export class from native.
+    Napi::Object Register_NativeAddon(Napi::Env env, Napi::Object exports); // native-class.cc
+    return Register_NativeAddon(env, exports);
+
     return exports;
 }
 

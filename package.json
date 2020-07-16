@@ -5,11 +5,11 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "tsc && cross-env NODE_ENV=development node ./examples/test.js",
+    "test": "node-gyp build && tsc && cross-env NODE_ENV=development node ./examples/test.js",
+    "test2": "node-gyp build && cross-env NODE_ENV=development ts-node ./examples/test2.ts",
     "testelec": "node-gyp build && cross-env NODE_ENV=development electron ./examples/main.js",
     "build": "tsc && yarn node-gyp:rebuild",
-    "node-gyp:build": "node-gyp build",
-    "node-gyp:rebuild": "node-gyp clean && node-gyp rebuild",
+    "config": "node-gyp clean && node-gyp rebuild",
     "preinstall": "npm i node-addon-api"
   },
   "repository": {
@@ -37,6 +37,7 @@
     "@types/bindings": "^1.3.0",
     "cross-env": "^7.0.2",
     "electron": "^9.1.0",
+    "ts-node": "^8.10.2",
     "typescript": "^3.9.6"
   }
 }

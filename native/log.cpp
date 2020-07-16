@@ -8,7 +8,7 @@
 #include <Windows.h>
 #endif
 
-bool isDev = false;
+bool isDev = true;
 
 std::string format(const char *fmt, ...)
 {
@@ -30,8 +30,8 @@ void log(const char *fmt, ...)
     va_end(args);
 #ifdef WIN32
     ::OutputDebugStringA(buffer);
+    ::fputs(buffer, stdout);
 #else
     ::fputs(buffer, stdout);
 #endif
 }
-

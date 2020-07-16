@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.ts": "typescript",
         "xstring": "cpp",
         "algorithm": "cpp",
         "atomic": "cpp",
@@ -39,6 +40,23 @@
         "xmemory": "cpp",
         "xstddef": "cpp",
         "xtr1common": "cpp",
-        "xutility": "cpp"
+        "xutility": "cpp",
+        "filesystem": "cpp",
+        "ctime": "cpp",
+        "iomanip": "cpp",
+        "ios": "cpp",
+        "istream": "cpp",
+        "locale": "cpp",
+        "ostream": "cpp",
+        "streambuf": "cpp",
+        "xfacet": "cpp",
+        "xiosbase": "cpp",
+        "xlocale": "cpp",
+        "xlocbuf": "cpp",
+        "xlocinfo": "cpp",
+        "xlocmes": "cpp",
+        "xlocmon": "cpp",
+        "xlocnum": "cpp",
+        "xloctime": "cpp"
     }
 }

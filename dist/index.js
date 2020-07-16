@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addon = void 0;
+exports.bigintFromHandle = void 0;
 function bigintFromHandle(handle) {
     // handle:Buffer
     //return buf.readBigUInt64LE(buf);
@@ -10,13 +10,6 @@ function bigintFromHandle(handle) {
     }
     return n;
 }
-// helper functions.
-exports.default = {
-    bigintFromHandle,
-};
-
-const addon = {
-    key: require("bindings")("jjnative.node"),
-};
-exports.addon = addon;
+exports.bigintFromHandle = bigintFromHandle;
+exports.default = require("bindings")("jjnative.node");
 //# sourceMappingURL=index.js.map

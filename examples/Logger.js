@@ -89,5 +89,15 @@ module.exports.getMethods = (obj) => {
     do {
         Object.getOwnPropertyNames(currentObj).map((item) => properties.add(item));
     } while ((currentObj = Object.getPrototypeOf(currentObj)));
+
+    return [...properties.keys()].filter((item) => typeof obj[item] === "function");
+};
+
+module.exports.getStaticMethods = (obj) => {
+    let properties = new Set();
+    for (let cur = obj.constructor; cur; cur = Object.getPrototypeOf(cur)) {
+        Object.getOwnPropertyNames(cur).map((item) => properties.add(item));
+    }
+
     return [...properties.keys()].filter((item) => typeof obj[item] === "function");
 };

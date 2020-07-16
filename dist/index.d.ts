@@ -1,16 +1,21 @@
 /// <reference types="node" />
-interface INative {
+interface NativeAddon {
+    tryCallByStoredReference(): string;
+    tryCallByStoredFunction(): string;
+}
+interface IAddon {
     startKeyMonitor(hwnd: bigint): boolean;
     stopKeyMonitor(): boolean;
     pauseKeyMonitor(): boolean;
     resumeKeyMonitor(): boolean;
+    getPrimeAsync(): Promise<number[]>;
+    getPrimeSync(): number[];
+    NativeAddon: {
+        new (fnref: Function, fn: Function): NativeAddon;
+    };
+    dumpNativeAddon(inst: NativeAddon): void;
 }
 declare function bigintFromHandle(handle: Buffer): bigint;
-declare const _default: {
-    bigintFromHandle: typeof bigintFromHandle;
-};
+declare const _default: IAddon;
 export default _default;
-declare const addon: {
-    key: INative;
-};
-export { addon };
+export { bigintFromHandle };

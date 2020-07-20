@@ -103,7 +103,11 @@ private:
                         if (altDown) lParam |= 1<<29;
                     }
 
-                    assert(hTargetWnd);
+                    if (!IsWindow(hTargetWnd)) {
+                        log("hwnd.%p is not a window\n", hTargetWnd);
+                        break;
+                    }
+                    
                     EXPECT(::PostMessageW(hTargetWnd, wParam, kbdll->vkCode, lParam));
                     return TRUE;
                 }

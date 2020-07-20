@@ -86,6 +86,7 @@ private:
             case WM_KEYDOWN:
             case WM_KEYUP:
                 switch (kbdll->vkCode) {
+                case VK_SNAPSHOT: // PrtSc/SysRq
                 case VK_LWIN: case VK_RWIN:
                 case VK_LMENU: case VK_RMENU:
                 case VK_LCONTROL: case VK_RCONTROL:

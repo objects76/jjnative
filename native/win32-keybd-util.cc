@@ -51,7 +51,10 @@ public:
     bool hook(HWND hWnd) 
     {
         FNSCOPE();
-        static auto _this = this;
+        static LLHook* _this = nullptr;
+        _this = this;
+        
+        Assert0(hKeyHook == nullptr);
         HMODULE hInstance = EXPECT(::GetModuleHandleA(TOSTR(NODE_GYP_MODULE_NAME) ".node"));
         hKeyHook = ::SetWindowsHookExW(
             WH_KEYBOARD_LL, [](int nCode, WPARAM wParam, LPARAM lParam) -> LRESULT {

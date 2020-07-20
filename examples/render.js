@@ -4,11 +4,11 @@ logger.log('render');
 
 function setup_keyevent() {
     document.addEventListener('keydown', (e) => {
-        logger.log('keydown:', e);
+        logger.log(`${e.type}: ${e.key}, ${e.code}, ${e.keyCode}`, e);
     });
 
     document.addEventListener('keyup', (e) => {
-        logger.log('keyup:', e);
+        logger.log(`${e.type}: ${e.key}, ${e.code}, ${e.keyCode}`, e);
     });
 };
 

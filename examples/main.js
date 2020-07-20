@@ -4,7 +4,7 @@ const BrowserWindow = require('electron').BrowserWindow;
 const logger = require('./Logger');
 
 const addonBase = require('../dist/index');
-const addon = require("bindings")("jjnative.node");
+const addon = addonBase.default;
 
 logger.log(addon);
 

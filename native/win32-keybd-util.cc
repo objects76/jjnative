@@ -21,6 +21,7 @@ public:
     LLHook() = default;
     ~LLHook()
     {
+        FNSCOPE();
         if (loopThreadId)
             EXPECT(::PostThreadMessageW(loopThreadId, WM_QUIT, 0, 0));
 
@@ -49,6 +50,7 @@ public:
 
     bool hook(HWND hWnd) 
     {
+        FNSCOPE();
         static auto _this = this;
         HMODULE hInstance = EXPECT(::GetModuleHandleA(TOSTR(NODE_GYP_MODULE_NAME) ".node"));
         hKeyHook = ::SetWindowsHookExW(
@@ -65,6 +67,7 @@ public:
 
         hTargetWnd = hWnd;
         loopFuture = std::async(std::launch::async, [this]{
+            LOG("monitor started");
             loopThreadId = ::GetCurrentThreadId();
             for (MSG msg; GetMessageW(&msg, nullptr, 0, 0) > 0; );
             LOG("monitor stopped");
@@ -129,6 +132,7 @@ private:
 static std::unique_ptr<LLHook> _keybdMonitor;
 bool startKeybdMonitor(int64_t hwndNumber)
 {
+    FNSCOPE();
     HWND hTargetWnd = (HWND)hwndNumber;
     if (!::IsWindow(hTargetWnd))
     {
@@ -144,12 +148,13 @@ bool startKeybdMonitor(int64_t hwndNumber)
         return false;
     }
 
-    log("setup ok at %s\n", __FUNCTION__);
+    log("setup(hwnd.%p) ok at %s\n", hTargetWnd, __FUNCTION__);
     return true;
 }
 
 bool stopKeybdMonitor()
 {
+    FNSCOPE();
     if (_keybdMonitor)
     {
         _keybdMonitor.reset();
@@ -162,6 +167,7 @@ bool stopKeybdMonitor()
 
 bool pauseResumeKeybdMonitor(bool resume)
 {
+    FNSCOPE();
     if (_keybdMonitor)
     {
         if (resume)

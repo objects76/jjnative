@@ -60,6 +60,10 @@
         "xloctime": "cpp",
         "array": "cpp",
         "iterator": "cpp",
-        "sstream": "cpp"
+        "sstream": "cpp",
+        "fstream": "cpp",
+        "iostream": "cpp",
+        "set": "cpp",
+        "xtree": "cpp"
     }
 }

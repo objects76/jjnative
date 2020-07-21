@@ -60,10 +60,11 @@ public:
         deferred.Resolve(arr);
     }
 
-    void OnError(Napi::Error const &error)
+    void OnError(Napi::Error const & err)
     {
         FNSCOPE();
-        deferred.Reject(error.Value());
+        LOGE << err.Message();
+        deferred.Reject(err.Value());
     }
     Napi::Promise GetPromise() { return deferred.Promise(); }
 

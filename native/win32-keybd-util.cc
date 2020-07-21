@@ -58,7 +58,7 @@ public:
 
         if (!hKeyHook) 
         {
-            throw_error(__FUNCTION__, fmt::csprintf("keyhook failed: errno=%d", GetLastError()));
+            js_throw_error(__FUNCTION__, fmt::csprintf("keyhook failed: errno=%d", GetLastError()));
             return false;
         }
 
@@ -133,7 +133,7 @@ bool startKeybdMonitor(int64_t hwndNumber)
     HWND hTargetWnd = (HWND)hwndNumber;
     if (!::IsWindow(hTargetWnd))
     {
-        throw_error(__FUNCTION__, fmt::csprintf("invalid window handle: %p", hTargetWnd));
+        js_throw_error(__FUNCTION__, fmt::csprintf("invalid window handle: %p", hTargetWnd));
         return false;
     }
 
@@ -141,7 +141,7 @@ bool startKeybdMonitor(int64_t hwndNumber)
     _keybdMonitor = std::make_unique<LLHook>();
     if (!_keybdMonitor->hook(hTargetWnd))
     {
-        throw_error(__FUNCTION__, fmt::csprintf("setup failed : errno=%d", GetLastError()));
+        js_throw_error(__FUNCTION__, fmt::csprintf("setup failed : errno=%d", GetLastError()));
         _keybdMonitor.reset();
         return false;
     }

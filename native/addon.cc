@@ -5,6 +5,7 @@
 #ifdef WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include "zMiniDump.h"
 #endif
 
 #include "napi-helper.hpp"
@@ -16,22 +17,23 @@
 #define expect_type(obj, type, info)                    \
     if ((obj).Type() != type)                           \
     {                                                   \
-        throw_error(__FUNCTION__, "Expected " #type);   \
+        js_throw_error(__FUNCTION__, "Expected " #type);   \
         return info.Env().Undefined();                  \
     }
 
 #define ThrowErrIfFailed(c, info)    if (!(c)) {  \
-        throw_error(__FUNCTION__, #c);      \
+        js_throw_error(__FUNCTION__, #c);      \
         return info.Env().Undefined(); \
     } 
 
 static thread_local napi_env _env = nullptr;
-void fatal_error(std::string_view pos, std::string_view msg)
+void js_fatal_error(std::string_view pos, std::string_view msg)
 {
+    std::ostringstream oss;
     LOGE0 << msg << " at " << pos;
     Napi::Error::Fatal(pos.data(), msg.data());
 }
-void throw_error(std::string_view pos, std::string_view msg)
+void js_throw_error(std::string_view pos, std::string_view msg)
 {
     std::ostringstream oss;
     oss << "exception: " << msg << " at " << pos;
@@ -94,6 +96,8 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
     _env = env;
 
     klog::Init();
+
+
     static FILE* fp = klog::OpenFile(klog::GetLogPath("logs", TOSTR(NODE_GYP_MODULE_NAME)) );
 	klog::Out::A = [](const char* msg) {
 		::OutputDebugStringA(msg);
@@ -107,10 +111,14 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
     void* hDllModule = nullptr;
 #ifdef WIN32
 	DWORD flags = GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT;
-	EXPECT( GetModuleHandleExA(flags, (LPSTR)&fatal_error, (HMODULE*)&hDllModule) );
+	EXPECT( GetModuleHandleExA(flags, (LPSTR)&js_fatal_error, (HMODULE*)&hDllModule) );
 #endif
 
 	LOGI << klog::GetHeader(hDllModule);
+    #ifdef WIN32
+    util23::mswin::SetUnhandledSEHandler();
+    util23::mswin::SetDumpFolder("logs");
+    #endif
 	FNSCOPE();
 
     const char *nodeenv = std::getenv("NODE_ENV");

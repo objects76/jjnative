@@ -57,7 +57,13 @@ NativeAddon::NativeAddon(const Napi::CallbackInfo &info)
     jsFnRef = AsArg<decltype(jsFnRef)>(info[0]);
     jsFn = AsArg<decltype(jsFn)>(info[1]);
 
-    LOGI << fmt::csprintf("ctro: jsfnref=%p, jsfn=%p", &jsFnRef, &jsFn);
+    LOGI << fmt::csprintf("ctor of NativeAddon: jsfnref=%p, jsfn=%p", &jsFnRef, &jsFn);
+
+    if (AsArg<bool>(info[2])) {
+        LOGI << "crash dump file generation test";
+        int* p = (int*)4;
+        *p = 100;
+    }
 }
 
 Napi::Value NativeAddon::TryCallByStoredReference(const Napi::CallbackInfo &info)

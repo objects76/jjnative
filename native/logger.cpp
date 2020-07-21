@@ -327,50 +327,49 @@ std::string klog::GetLogPath(const std::string& subfolder, std::string logName)
 		logName = exePath.filename().string();
 
 	{
-		std::string userNamePID = [] {
-#ifdef _WIN32
-			if (HANDLE hToken = 0; OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
-			{
-				std::array<char, 300>tubuf;
-				auto ptu = (TOKEN_USER*)tubuf.data();
-				DWORD dummy;
-				if (GetTokenInformation(hToken, TokenUser, ptu, (DWORD)tubuf.size(), &dummy))
-				{
-					CloseHandle(hToken);
-					int iUse;
-					std::array<char, 300> domain, name;
-					DWORD dlen = (DWORD)domain.size();
-					DWORD nlen = (DWORD)name.size();
-					if (LookupAccountSidA(0, ptu->User.Sid, name.data(), &nlen, domain.data(), &dlen, (PSID_NAME_USE)&iUse))
-					{
-						//return domain.data() + std::string(".") + name.data();
-						return std::string(name.data());
-					}
-				}
-			}
-#endif
-			return std::string{};
-		}();
+// 		std::string userNamePID = [] {
+// #ifdef _WIN32
+// 			if (HANDLE hToken = 0; OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &hToken))
+// 			{
+// 				std::array<char, 300>tubuf;
+// 				auto ptu = (TOKEN_USER*)tubuf.data();
+// 				DWORD dummy;
+// 				if (GetTokenInformation(hToken, TokenUser, ptu, (DWORD)tubuf.size(), &dummy))
+// 				{
+// 					CloseHandle(hToken);
+// 					int iUse;
+// 					std::array<char, 300> domain, name;
+// 					DWORD dlen = (DWORD)domain.size();
+// 					DWORD nlen = (DWORD)name.size();
+// 					if (LookupAccountSidA(0, ptu->User.Sid, name.data(), &nlen, domain.data(), &dlen, (PSID_NAME_USE)&iUse))
+// 					{
+// 						//return domain.data() + std::string(".") + name.data();
+// 						return std::string(name.data());
+// 					}
+// 				}
+// 			}
+// #endif
+// 			return std::string{};
+// 		}();
+// 		std::string userNameSID = [] {
+// #ifdef _WIN32
+// 			std::string name;
+// 			{
+// 				DWORD sid = 0;
+// 				::ProcessIdToSessionId(getPid(), &sid);
+// 				DWORD bytesReturned = 0;
+// 				if (char* pData = NULL; WTSQuerySessionInformationA(WTS_CURRENT_SERVER_HANDLE, sid, WTSUserName, &pData, &bytesReturned)) {
+// 					name = pData;
+// 					WTSFreeMemory(pData);
+// 				}
+// 			}
+// 			return name;
+// #endif
+// 			return std::string{};
+// 		}();
+		std::string userNameSID = "";
+		std::string userNamePID = ""; // disable username.
 
-		std::string userNameSID = [] {
-#ifdef _WIN32
-			std::string name;
-			{
-				DWORD sid = 0;
-				::ProcessIdToSessionId(getPid(), &sid);
-
-				DWORD bytesReturned = 0;
-				if (char* pData = NULL; WTSQuerySessionInformationA(WTS_CURRENT_SERVER_HANDLE, sid, WTSUserName, &pData, &bytesReturned)) {
-					name = pData;
-					WTSFreeMemory(pData);
-				}
-			}
-			return name;
-#endif
-			return std::string{};
-		}();
-
-		userNameSID = userNamePID = ""; // disable username.
 		std::array<char, 128> logext;
 		DWORD sid = 0;
 		auto pid = getPid();
@@ -504,7 +503,7 @@ std::string klog::GetHeader(void* handle, const char* buildtime)
 			MODULEINFO  mi = {};
 			char buf[400], path[MAX_PATH] = {};
 			::GetModuleInformation(GetCurrentProcess(), handle, &mi, sizeof(mi));
-			GetModuleFileNameA(handle, path, sizeof(path));
+			::GetModuleFileNameA(handle, path, sizeof(path));
 			sprintf_s(buf, sizeof(buf), "Range=%p~%p, %s", mi.lpBaseOfDll, (char*)mi.lpBaseOfDll + mi.SizeOfImage, path);
 			return std::string(buf);
 		};

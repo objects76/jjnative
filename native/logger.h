@@ -4,9 +4,14 @@
 #include <chrono>
 #include <array>
 #include <string>
-using namespace std::chrono_literals;
+
+#include <cstdio>
+#include <cstdlib>
+#include <sstream>
+
 
 #define STANDALONE
+
 #ifdef WIN32
 #pragma comment(lib, "Wtsapi32")
 #endif
@@ -89,10 +94,6 @@ using namespace std::chrono_literals;
 inline void OutputDebugStringA(const char* msg) { printf(msg); }
 inline void OutputDebugStringW(const wchar_t* msg) { wprintf(msg); }
 #endif
-
-#include <cstdio>
-#include <cstdlib>
-#include <sstream>
 
 
 #ifndef __basename__
@@ -187,7 +188,6 @@ namespace klog
 		inline std::string str() { return oss_.str(); }
 	};
 	
-
 	void DebugPrintf(const char* file, int line, const char* format, ...);
 	void DebugPrintf(const char* file, int line, const wchar_t* format, ...);
 
@@ -273,6 +273,7 @@ namespace klog
 	//
 	// reduct too many same log.
 	//
+	using namespace std::chrono_literals;
 	class Loggable
 	{
 	public:
@@ -322,32 +323,30 @@ namespace klog
 #define EXPECT_NOT(op, not_expected)      klog::expect_not_(#op, __LINE__, (op), not_expected)
 namespace klog {
     template<typename T>
-    inline T expect_(const char* pos, int line, const T value, const T expected)
+    inline T expect_(const char* pos, int line, const T value, const T& expected)
     {
         if (value != expected) {
-			klog::LogStream('E', pos, line).stream() 
-				<< "expect "<<expected <<", but " << value <<", errno="<< GetLastError();
+			klog::ErrnoStream(pos, line).stream()
+				<< "expect "<< expected <<", but " << value;
         }
         return value;
     }
 
     template<typename T>
-    inline T expect_(const char* msg, int line, T value )
+    inline T expect_(const char* pos, int line, T value )
     {
         if (!value) {
-			klog::LogStream('E', msg, line).stream() 
-				<< "Failed, errno="<< GetLastError();
+			klog::ErrnoStream(pos, line).stream() << "Failed";
         }
         return value;
     }
 
 
     template<typename T>
-    inline T expect_not_(const char* msg, int line, T value, const T not_expected)
+    inline T expect_not_(const char* pos, int line, T value, const T& not_expected)
     {
         if (value == not_expected) {
-            klog::LogStream('E', pos, line).stream() 
-				<< "Not expect value=" << not_expected <<", errno="<< GetLastError();
+            klog::ErrnoStream(pos, line).stream() << "Not expect value=" << not_expected;
         }
         return value;
     }
@@ -384,6 +383,4 @@ inline std::string ToMbcs(const std::wstring_view& wstr)
 	buf.resize(len - 1);
 	return buf;
 }
-
-using namespace klog;
 

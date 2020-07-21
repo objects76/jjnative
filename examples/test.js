@@ -56,7 +56,8 @@ function test_main() {
 
     const obj = new addon.NativeAddon(
         () => { console.log('Hi! I\'m a JSRef function!') },
-        () => { console.log('Hi! I\'m a JS function!') }
+        () => { console.log('Hi! I\'m a JS function!') },
+        false // make crash.
     );
     logger.log(logger.getObjectInfo(obj));
     // logger.log(getObjectInformation(obj.constructor));
@@ -66,6 +67,13 @@ function test_main() {
     const clsNativeAddon = addon.NativeAddon;//obj.constructor;
     logger.log(logger.getObjectInfo(clsNativeAddon));
     clsNativeAddon.staticMethod1(obj, "second arg: string");
+
+    const crashed_obj = new addon.NativeAddon(
+        () => { console.log('Hi! I\'m a JSRef function!') },
+        () => { console.log('Hi! I\'m a JS function!') },
+        true // make crash.
+    );
+
 }
 
 // try {

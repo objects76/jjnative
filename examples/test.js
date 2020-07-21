@@ -65,8 +65,7 @@ function test_main() {
 
     const clsNativeAddon = addon.NativeAddon;//obj.constructor;
     logger.log(logger.getObjectInfo(clsNativeAddon));
-
-    clsNativeAddon.NativeAddon_dump1(obj);
+    clsNativeAddon.staticMethod1(obj, "second arg: string");
 }
 
 // try {

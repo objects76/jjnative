@@ -10,8 +10,6 @@
 #include <cstdlib>
 #include "log.h"
 
-#include <initializer_list>
-
 using namespace std::chrono_literals;
 
 
@@ -32,29 +30,25 @@ public:
                 loopFuture.get();
             else {
                 const char* name[] = {"ready", "timeout", "deffered"};
-                log("wait failed: %s\n", name[(int)state]);
+                LOGI << fmt::csprintf("wait failed: %s", name[(int)state]);
             }
         }
         
         if (hKeyHook)
             EXPECT(::UnhookWindowsHookEx(hKeyHook));
     }
-    void Pause()
+    void Pause(bool pause)
     {
-        pause_hook = true;
-    }
-    void Resume()
-    {
-        pause_hook = false;
+        LOGI << fmt::csprintf("%s keybd monitor", pause?"Pause":"Resume");
+        pauseMonitor = pause;
     }
 
     bool hook(HWND hWnd) 
     {
-        FNSCOPE();
         static LLHook* _this = nullptr;
         _this = this;
-        
-        Assert0(hKeyHook == nullptr);
+
+        Assert(hKeyHook == nullptr);
         HMODULE hInstance = EXPECT(::GetModuleHandleA(TOSTR(NODE_GYP_MODULE_NAME) ".node"));
         hKeyHook = ::SetWindowsHookExW(
             WH_KEYBOARD_LL, [](int nCode, WPARAM wParam, LPARAM lParam) -> LRESULT {
@@ -64,43 +58,43 @@ public:
 
         if (!hKeyHook) 
         {
-            log("keyhook failed: errno=%d\n", GetLastError());
+            throw_error(__FUNCTION__, fmt::csprintf("keyhook failed: errno=%d", GetLastError()));
             return false;
         }
 
         hTargetWnd = hWnd;
         loopFuture = std::async(std::launch::async, [this]{
-            LOG("monitor started");
+            klog::FnScope("loopFuture");
             loopThreadId = ::GetCurrentThreadId();
             for (MSG msg; GetMessageW(&msg, nullptr, 0, 0) > 0; );
-            LOG("monitor stopped");
             return 0;
         });
-        return true;
+
+        return EXPECT(loopFuture.valid());
     }
 
 private:
-    LRESULT CALLBACK LLKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+    LRESULT LLKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
-        if (nCode == HC_ACTION && pause_hook == false)
+        if (nCode == HC_ACTION && pauseMonitor == false)
         {
-            const auto kbdll = (KBDLLHOOKSTRUCT *)lParam;
             switch (wParam)
             {
             case WM_SYSKEYDOWN:
             case WM_SYSKEYUP:
             case WM_KEYDOWN:
             case WM_KEYUP:
+                const auto kbdll = (KBDLLHOOKSTRUCT *)lParam;
                 switch (kbdll->vkCode) {
                 case VK_SNAPSHOT: // PrtSc/SysRq
                 case VK_LWIN: case VK_RWIN:
                 case VK_LMENU: case VK_RMENU:
                 case VK_LCONTROL: case VK_RCONTROL:
                     if (isDev)
-                        log("msg=%04X, key.%x block %s\n", wParam, kbdll->vkCode, ((wParam & 1) ? "UP" : "DOWN"));
+                        LOGI << fmt::csprintf("msg=%04X, key.%x block %s", wParam, kbdll->vkCode, ((wParam & 1) ? "UP" : "DOWN"));
 
                     const bool keyup = !!(wParam & 1);
-                    const bool extended = kbdll->flags & LLKHF_EXTENDED;
+                    const bool extended = (kbdll->flags & LLKHF_EXTENDED);
                     lParam = (1<<30) | ((kbdll->scanCode&0xff) << 16) | 1;
                     if (keyup) lParam |= 1<<31;
                     if (extended) lParam |= 1<<24;
@@ -110,7 +104,7 @@ private:
                     }
 
                     if (!IsWindow(hTargetWnd)) {
-                        log("hwnd.%p is not a window\n", hTargetWnd);
+                        LOGI << fmt::csprintf("hwnd.%p is not a window", hTargetWnd);
                         break;
                     }
                     
@@ -124,7 +118,7 @@ private:
 
     std::future<int> loopFuture;
     uint32_t loopThreadId = 0;
-    bool pause_hook = false;
+    bool pauseMonitor = false;
     HWND hTargetWnd = nullptr;
     HHOOK hKeyHook = nullptr;
 };
@@ -139,19 +133,20 @@ bool startKeybdMonitor(int64_t hwndNumber)
     HWND hTargetWnd = (HWND)hwndNumber;
     if (!::IsWindow(hTargetWnd))
     {
-        throw_error(format("invalid window handle: %p", hTargetWnd), __FUNCTION__);
+        throw_error(__FUNCTION__, fmt::csprintf("invalid window handle: %p", hTargetWnd));
         return false;
     }
 
+    _keybdMonitor.reset();
     _keybdMonitor = std::make_unique<LLHook>();
     if (!_keybdMonitor->hook(hTargetWnd))
     {
-        throw_error(format("setup failed : errno=%d", GetLastError()), __FUNCTION__);
+        throw_error(__FUNCTION__, fmt::csprintf("setup failed : errno=%d", GetLastError()));
         _keybdMonitor.reset();
         return false;
     }
 
-    log("setup(hwnd.%p) ok at %s\n", hTargetWnd, __FUNCTION__);
+    LOGI << fmt::csprintf("setup(hwnd.%p) ok at %s", hTargetWnd, __FUNCTION__);
     return true;
 }
 
@@ -164,32 +159,41 @@ bool stopKeybdMonitor()
         return true;
     }
 
-    log("No keybd monitor object at %s\n", __FUNCTION__);
+    LOGI << fmt::csprintf("No keybd monitor object at %s", __FUNCTION__);
     return false;
 }
 
-bool pauseResumeKeybdMonitor(bool resume)
+bool pauseResumeKeybdMonitor(bool pause)
 {
-    FNSCOPE();
     if (_keybdMonitor)
     {
-        if (resume)
-            _keybdMonitor->Resume();
-        else
-            _keybdMonitor->Pause();
+        
+        _keybdMonitor->Pause(pause);
         return true;
     }
 
-    log("No keybd monitor object at %s\n", __FUNCTION__);
+    LOGI << fmt::csprintf("No keybd monitor object at %s", __FUNCTION__);
     return false;
 }
 
 // BOOL WINAPI DllMain(
-//     __in HINSTANCE hinstDLL,
+//     __in HINSTANCE hDllHandle,
 //     __in DWORD fdwReason,
 //     __in LPVOID lpvReserved)
 // {
-//     log("dllmain...: dllhandle=%p\n", hinstDLL);
+//     switch (fdwReason)
+//     {
+//     case DLL_PROCESS_ATTACH:
+//             DisableThreadLibraryCalls(hDllHandle);
+//     case DLL_PROCESS_DETACH:
+//             LOGI << "reason=" << fdwReason;
+//             break;
+
+//     case DLL_THREAD_ATTACH:
+//     case DLL_THREAD_DETACH:
+//             LOGD << "reason=" << fdwReason;
+//             break;
+//     }
 //     return TRUE;
 // }
 #endif

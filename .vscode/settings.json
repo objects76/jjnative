@@ -59,6 +59,7 @@
         "xlocnum": "cpp",
         "xloctime": "cpp",
         "array": "cpp",
-        "iterator": "cpp"
+        "iterator": "cpp",
+        "sstream": "cpp"
     }
 }

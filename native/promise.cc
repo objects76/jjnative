@@ -17,12 +17,12 @@ public:
         : Napi::AsyncWorker(env),
           deferred(Napi::Promise::Deferred::New(env))
     {
-        LOG();
+        FNSCOPE();
     }
 
     ~PiWorker()
     {
-        LOG();
+        FNSCOPE();
     }
 
     // Executed inside the worker-thread.
@@ -31,7 +31,7 @@ public:
     // should go on `this`.
     void Execute()
     {
-        LOG();
+        FNSCOPE();
         findPrimeNumbers();
 
         // you could handle errors as well
@@ -46,7 +46,7 @@ public:
     // so it is safe to use JS engine data again
     void OnOK()
     {
-        LOG();
+        FNSCOPE();
         // LOG("%d, %d, %d, %d, %d\n", data[0], data[1], data[2], data[3], data[4]);
         // Napi::HandleScope scope(Env());
         // auto num = Napi::Number::New(Env(), 12345);
@@ -62,7 +62,7 @@ public:
 
     void OnError(Napi::Error const &error)
     {
-        LOG();
+        FNSCOPE();
         deferred.Reject(error.Value());
     }
     Napi::Promise GetPromise() { return deferred.Promise(); }
@@ -105,7 +105,7 @@ private:
 // Asynchronous access to the `Estimate()` function
 Napi::Value getPrimeSync(const Napi::CallbackInfo &info)
 {
-    LOG();
+    FNSCOPE();
     auto &env = info.Env();
     int data[PRIME_COUNT] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
 
@@ -119,7 +119,7 @@ Napi::Value getPrimeSync(const Napi::CallbackInfo &info)
 
 Napi::Value getPrimeAsync(const Napi::CallbackInfo &info)
 {
-    LOG();
+    FNSCOPE();
     auto &env = info.Env();
 
     PiWorker *piWorker = new PiWorker(env);

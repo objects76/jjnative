@@ -7,6 +7,7 @@ class NativeAddon : public Napi::ObjectWrap<NativeAddon>
 {
 public:
     static Napi::Object Register(Napi::Env env, Napi::Object exports) {
+        FNSCOPE();
          Napi::HandleScope scope(env);
 
         Napi::Function ctor = DefineClass(env, "NativeAddon", {
@@ -27,10 +28,11 @@ public:
     NativeAddon(const Napi::CallbackInfo &info);
     
     static void Dump(const Napi::CallbackInfo &info) {
+        FNSCOPE();
         auto _this = AsObj<NativeAddon>(info[0]);
         //std::string arg = info[1].As<Napi::String>().Utf8Value();
         auto arg = AsArg<std::string>(info[1]);
-        LOG("dump: jsfnref=%p, jsfn=%p: %s", &_this->jsFnRef, &_this->jsFn, arg.c_str());
+        LOGI << fmt::csprintf("dump: jsfnref=%p, jsfn=%p: %s", &_this->jsFnRef, &_this->jsFn, arg.c_str());
     }
 
 
@@ -43,6 +45,7 @@ private:
 
 
 Napi::Object Register_NativeAddon(Napi::Env env, Napi::Object exports) {
+    FNSCOPE();
     return NativeAddon::Register(env, exports);    
 }
 
@@ -50,16 +53,15 @@ Napi::Object Register_NativeAddon(Napi::Env env, Napi::Object exports) {
 NativeAddon::NativeAddon(const Napi::CallbackInfo &info)
     : Napi::ObjectWrap<NativeAddon>(info)
 {
-    LOG();
-    jsFnRef = Napi::Persistent(info[0].As<Napi::Function>());
-    jsFn = info[1].As<Napi::Function>();
+    FNSCOPE();
+    jsFnRef = AsArg<decltype(jsFnRef)>(info[0]);
+    jsFn = AsArg<decltype(jsFn)>(info[1]);
 
-    LOG("ctro: jsfnref=%p, jsfn=%p", &jsFnRef, &jsFn);
+    LOGI << fmt::csprintf("ctro: jsfnref=%p, jsfn=%p", &jsFnRef, &jsFn);
 }
 
 Napi::Value NativeAddon::TryCallByStoredReference(const Napi::CallbackInfo &info)
 {
-    LOG();
     // Napi::Env env = info.Env();
     jsFnRef.Call({});
 
@@ -68,7 +70,6 @@ Napi::Value NativeAddon::TryCallByStoredReference(const Napi::CallbackInfo &info
 
 Napi::Value NativeAddon::TryCallByStoredFunction(const Napi::CallbackInfo &info)
 {
-    LOG();
     // Napi::Env env = info.Env();
     jsFn.Call({});
 

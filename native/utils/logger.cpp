@@ -91,16 +91,6 @@ static inline int xheader(XCHAR* buffer, char level, const char* tag)
 		return sprintf_s(buffer, BUFSIZE, "%c.%-8.8s  %-8d %02d:%02d:%02d.%03d   ", level, tag, gettid(), ltm.wHour, ltm.wMinute, ltm.wSecond, ltm.wMilliseconds);
 }
 
-void klog::enter_scope(const char* lbl)
-{
-	DebugPrintf(0, 0, "{ %s", lbl);
-}
-
-void klog::leave_scope(const char* lbl)
-{
-	DebugPrintf(0, 0, "} %s", lbl);
-}
-
 #endif // USE_INDENT_OUTPUT
 
 
@@ -403,7 +393,7 @@ FILE* klog::OpenFile(const std::string& path)
 
 
 
-std::string klog::GetHeader(void* handle, const char* buildtime)
+std::string klog::GetHeader(void* symbolAddr, const char* buildtime)
 {
 	std::ostringstream ossbuf;
 	ossbuf << "\n---------------------------------------------------------";
@@ -414,30 +404,29 @@ std::string klog::GetHeader(void* handle, const char* buildtime)
 		ossbuf << "\n\t";
 		OSVERSIONINFOEXW osver = { sizeof(osver) };
 		RtlGetVersion(&osver);
-
-#		define OSENT(major,minor,server, str)	{(major<<16)|(minor)|(server), str}
-		std::unordered_map<uint32_t, const char*> osname = {
-			 OSENT(10, 0, 0, "Win10"),
-			 OSENT(10, 0, 1 << 31, "Server2016"),
-			 OSENT(6,  3, 0, "Win8.1"),
-			 OSENT(6 , 3, 1 << 31, "Server2012 R2"),
-			 OSENT(6,  2, 0, "Win8"),
-			 OSENT(6,  2, 1 << 31, "Server2012"),
-			 OSENT(6,  1, 0, "Win7"),
-			 OSENT(6,  1, 1 << 31, "Server2008 R2"),
-			 OSENT(6,  0, 1 << 31, "Server2008"),
-			 OSENT(6,  0, 0, "Vista"),
-			 OSENT(5,  2, 1 << 31, "Server2003 R2"),// GetSystemMetrics(SM_SERVERR2) != 0
-			 OSENT(5,  2, 0, "Server2003"), // GetSystemMetrics(SM_SERVERR2) == 0
-			 OSENT(5,  1, 0, "WinXP"),
-		};
-
+		
 		bool isServer = (osver.wProductType != VER_NT_WORKSTATION);
 		if (osver.dwMajorVersion == 5 && osver.dwMinorVersion == 2)
 			isServer = (GetSystemMetrics(SM_SERVERR2) != 0);
-		
-		if (uint32_t id = (osver.dwMajorVersion << 16) | osver.dwMinorVersion | (isServer ? (1 << 31) : 0); osname.find(id) != osname.end())
-			ossbuf << osname[id];
+
+		const char* osn = "???";
+		switch(uint32_t osnum = osver.dwMajorVersion * 10000 + osver.dwMinorVersion * 100 + (isServer ? 1:0))
+		{
+			case 10'00'00: osn = "Win10"; break;
+			case 10'00'01: osn = "Server2016(Win10)"; break;
+			case  6'03'00: osn = "Win8.1"; break;
+			case  6'03'01: osn = "Server2012 R2(Win8.1)"; break;
+			case  6'02'00: osn = "Win8"; break;
+			case  6'02'01: osn = "Server2012(Win8)"; break;
+			case  6'01'00: osn = "Win7"; break;
+			case  6'01'01: osn = "Server2008 R2(Win7)"; break;
+			case  6'00'00: osn = "Vista"; break;
+			case  6'00'01: osn = "Server2008(Vista)"; break;
+			case  5'02'01: osn = "Server2003 R2"; break;// GetSystemMetrics(SM_SERVERR2) != 0
+			case  5'02'00: osn = "Server2003"; break; // GetSystemMetrics(SM_SERVERR2) == 0
+			case  5'01'00: osn = "WinXP"; break;
+		}
+		ossbuf << osn;
 
 		SYSTEM_INFO si = {};
 		::GetNativeSystemInfo(&si);
@@ -509,8 +498,12 @@ std::string klog::GetHeader(void* handle, const char* buildtime)
 		};
 
 		ossbuf << "\n\t" << moduleinfo(::GetModuleHandleA(nullptr));
-		if (handle)
-			ossbuf << "\n\t" << moduleinfo((HMODULE)handle);
+		if (symbolAddr) {
+			HMODULE hDllModule = nullptr;
+			DWORD flags = GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT;
+			EXPECT( GetModuleHandleExA(flags, (LPSTR)symbolAddr, &hDllModule) );
+			ossbuf << "\n\t" << moduleinfo(hDllModule);
+		}
 	}
 #else //  defined(STANDALONE) && defined(_WIN32)
 
@@ -521,7 +514,7 @@ std::string klog::GetHeader(void* handle, const char* buildtime)
 	ossbuf << "\nProcess information:" << util23::GetProcessInfo();
 	ossbuf << "\n\t" << util23::GetModuleInfo(nullptr);
 
-	if (handle)
+	if (symbolAddr)
 		ossbuf << "\n\t" << util23::GetModuleInfo((HMODULE)handle);
 #endif
 	ossbuf << "\n\t" << buildtime;

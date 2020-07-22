@@ -95,9 +95,6 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
 {
     _env = env;
 
-    klog::Init();
-
-
     static FILE* fp = klog::OpenFile(klog::GetLogPath("logs", TOSTR(NODE_GYP_MODULE_NAME)) );
 	klog::Out::A = [](const char* msg) {
 		::OutputDebugStringA(msg);
@@ -108,13 +105,8 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
 		if (fp) ::fputws(msg, fp);
 	};
 
-    void* hDllModule = nullptr;
-#ifdef WIN32
-	DWORD flags = GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT;
-	EXPECT( GetModuleHandleExA(flags, (LPSTR)&js_fatal_error, (HMODULE*)&hDllModule) );
-#endif
 
-	LOGI << klog::GetHeader(hDllModule);
+	LOGI << klog::GetHeader(&js_fatal_error);
     #ifdef WIN32
     util23::mswin::SetUnhandledSEHandler();
     util23::mswin::SetDumpFolder("logs");

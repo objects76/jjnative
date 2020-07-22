@@ -10,8 +10,6 @@
 #include <sstream>
 
 
-#define STANDALONE
-
 #ifdef WIN32
 #pragma comment(lib, "Wtsapi32")
 #endif
@@ -164,17 +162,12 @@ namespace klog
 		inline static void(__stdcall* A)(const char*) = &OutputDebugStringA;
 		inline static void(__stdcall* W)(const wchar_t*) = &OutputDebugStringW;
 	};
-	static void Init() {
-		Out::A = &OutputDebugStringA;
-		Out::W = &OutputDebugStringW;
-	}
-
 
 
 	std::string GetLogPath(const std::string& subfolder = "", std::string name = "");
 	FILE* OpenFile(const std::string& path);
 	void  BackupLog(const std::string& logPath, uint32_t max_size = 1024 * 512);
-	std::string GetHeader(void* hModule = nullptr, const char* buildtime = "BuildTime: " __DATE__ ", " __TIME__);
+	std::string GetHeader(void* symbolAddr = nullptr, const char* buildtime = "BuildTime: " __DATE__ ", " __TIME__);
 
 	class LogStream {
 		std::ostringstream oss_;
@@ -228,13 +221,10 @@ namespace klog
 	};
 #endif // _WIN32
 
-
-	void enter_scope(const char* lbl);
-	void leave_scope(const char* lbl);
 	struct FnScope {
 		const char* _str;
-		FnScope(const char* s) : _str(s) { enter_scope(_str); }
-		~FnScope() { leave_scope(_str); }
+		FnScope(const char* s) : _str(s) { DebugPrintf(0, 0, "{ %s", _str); }
+		~FnScope() { DebugPrintf(0, 0, "} %s", _str);; }
 	};
 
 	class AssertStream

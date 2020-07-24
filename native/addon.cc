@@ -106,7 +106,7 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
 	};
 
 
-	LOGI << klog::GetHeader(&js_fatal_error);
+	LOGI0 << klog::GetHeader(&js_fatal_error);
     #ifdef WIN32
     util23::mswin::SetUnhandledSEHandler();
     util23::mswin::SetDumpFolder("logs");

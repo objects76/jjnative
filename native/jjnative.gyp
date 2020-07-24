@@ -12,11 +12,13 @@
       "defines": [ "NAPI_DISABLE_CPP_EXCEPTIONS" ],
 
       'conditions': [
-        ['OS!="mac"', {'sources/': [['exclude', '-mac\\.*']]}],
+        ['OS!="mac"', {
+          'sources/': [['exclude', '-mac\\.*']]
+          }],
         ['OS!="win"', {
           'sources/': [['exclude', '-win32\\.*']],
           'defines': ['WIN32'],
-        }],
+          }],
       ],
 
       "msvs_settings": {

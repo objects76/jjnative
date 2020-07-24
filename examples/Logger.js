@@ -1,4 +1,5 @@
-
+const process = require('process');
+const path = require('path');
 // jjkim, 7/7/2010, initial
 
 class Logger {
@@ -31,15 +32,21 @@ class Logger {
         this.logger.warn(this._header(), ...args, this._get_caller());
     }
 
-    constructor() {
+    constructor(logPath, isMain) {
         this._level = 0;
         this.disable_scope = 0;
         this.scope = [];
-        this.logger = console;
+        console.log('logfile=', logPath);
         try {
             this.logger = require('electron-log');
+            if (logPath) {
+                this.logger.transports.file.resolvePath = () => logPath;
+                this.logger.transports.file.format = `{h}:{i}:{s}.{ms} ${isMain ? 'M' : 'R'}.[{level}] {text}`;
+                console.log(this.logger.transports.file.getFile());
+            }
         } catch (error) {
-            this.warn('no electron-log');
+            this.logger = console;
+            this.warn('set log file failed: ', error);
         }
     }
 
@@ -58,7 +65,7 @@ class Logger {
         //console.log(caller_line);
 
         if (m.length >= 4) {
-            return `at ${m[1].trimEnd()}:${m[3]}`;
+            return `at ${m[1].trimEnd()}: ${m[3]} `;
         }
         return caller_line;
     }
@@ -79,9 +86,8 @@ class Logger {
 //     return code;
 // }
 
-const L = new Logger();
-module.exports = L;
-//module.exports = console;
+//module.exports = new Logger();
+module.exports = Logger;
 
 module.exports.getMethods = (obj) => {
     let properties = new Set();
@@ -117,5 +123,5 @@ module.exports.getObjectInfo = (obj) => {
 
     const cls = obj.constructor;
     const staticfuncs = getFuncs(cls, predefined);
-    return `[${cls.name}]\nmemberfunc:\n    ${memfuncs}\nstaticfunc:\n    ${staticfuncs}`;
+    return `[${cls.name}]\nmemberfunc: \n    ${memfuncs} \nstaticfunc: \n    ${staticfuncs} `;
 };

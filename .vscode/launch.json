@@ -26,7 +26,6 @@
       "outFiles": [
         "${workspaceFolder}/**/*.js"
       ],
-      "protocol": "inspector"
     },
     {
       "name": "Electron Renderer",

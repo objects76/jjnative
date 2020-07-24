@@ -1,6 +1,13 @@
-const logger = require('./Logger');
 
-logger.log('render');
+const remote = require('electron').remote;
+const process = require('process');
+const path = require('path');
+const Logger = require('./Logger');
+
+
+//const logger = new Logger(path.join(app.getPath('logs'), app.getName() + `-render-${process.pid}.log`));
+const logger = new Logger(remote.getGlobal('logPath'), false);
+
 
 function setup_keyevent() {
     document.addEventListener('keydown', (e) => {

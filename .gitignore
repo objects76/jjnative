@@ -2,3 +2,4 @@ node_modules/
 build/
 *.lock
 package-lock.json
+yarn-error.log

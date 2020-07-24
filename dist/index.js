@@ -1,6 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bigintFromHandle = void 0;
+const bindings_1 = __importDefault(require("bindings"));
 function bigintFromHandle(handle) {
     // handle:Buffer
     //return buf.readBigUInt64LE(buf);
@@ -11,5 +15,4 @@ function bigintFromHandle(handle) {
     return n;
 }
 exports.bigintFromHandle = bigintFromHandle;
-exports.default = require("bindings")("jjnative.node");
-//# sourceMappingURL=index.js.map
+exports.default = bindings_1.default("jjnative.node");

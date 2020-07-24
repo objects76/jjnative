@@ -14,8 +14,8 @@ interface IAddon {
         new (fnref: Function, fn: Function): NativeAddon;
     };
     ArrayBufferArgument(buf: ArrayBuffer): number;
+    init(fnlog: Function | null, logDir: string | null): boolean;
 }
-declare function bigintFromHandle(handle: Buffer): bigint;
+export declare function bigintFromHandle(handle: Buffer): bigint;
 declare const _default: IAddon;
 export default _default;
-export { bigintFromHandle };

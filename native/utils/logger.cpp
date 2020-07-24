@@ -273,21 +273,16 @@ void klog::BackupLog(const std::string& logPath, uint32_t max_size)
 }
 
 // g2tray.exe-20190628.142825-S2.objects-P7076.SYSTEM.log
-std::string klog::GetLogPath(const std::string& subfolder, std::string logName)
+std::string klog::GetLogPath(const std::string& strLogDir, std::string logName)
 {
 	fs::path exePath(getExecutablePath());
 #ifdef WIN32
-	fs::path logDir = std::getenv("USERPROFILE");
-	logDir /= "Documents";
+	fs::path logDir = strLogDir.empty() ? (std::getenv("USERPROFILE") / fs::path("Documents")) : strLogDir;
 #else
-	fs::path logDir = exePath.parent_path();
 #endif
 
-	if (!subfolder.empty())
 	{
 		std::error_code ec;
-		
-		logDir /= subfolder;
 		if (fs::create_directories(logDir, ec) || ec.value() == 0)
 		{
 			// clear old logs.

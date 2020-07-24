@@ -164,7 +164,7 @@ namespace klog
 	};
 
 
-	std::string GetLogPath(const std::string& subfolder = "", std::string name = "");
+	std::string GetLogPath(const std::string& logDir = "", std::string name = "");
 	FILE* OpenFile(const std::string& path);
 	void  BackupLog(const std::string& logPath, uint32_t max_size = 1024 * 512);
 	std::string GetHeader(void* symbolAddr = nullptr, const char* buildtime = "BuildTime: " __DATE__ ", " __TIME__);

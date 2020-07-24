@@ -5,12 +5,12 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
-    "test": "node-gyp build -j 8 && tsc && cross-env NODE_ENV=development node ./examples/test.js",
-    "test2": "node-gyp build -j 8 && cross-env NODE_ENV=development ts-node ./examples/test2.ts",
-    "testelec": "node-gyp build -j 8 && tsc && cross-env NODE_ENV=development electron ./examples/main.js",
-    "build": "tsc && node-gyp rebuild -j 8",
+    "test": "node-gyp build -j 8 && yarn tsc2 && cross-env NODE_ENV=development node ./dist/examples/test.js",
+    "testelec": "node-gyp build -j 8 && yarn tsc2 && cross-env NODE_ENV=development electron ./dist/examples/main.js",
+    "build": "yarn tsc2 && node-gyp rebuild -j 8",
     "config": "node-gyp clean && node-gyp rebuild -j 8",
-    "preinstall": "npm i node-addon-api"
+    "preinstall": "npm i node-addon-api",
+    "tsc2": "tsc && cp examples/index.html dist/examples/"
   },
   "repository": {
     "type": "git",
@@ -35,6 +35,7 @@
   "private": true,
   "devDependencies": {
     "@types/bindings": "^1.3.0",
+    "@types/node": "^14.0.25",
     "cross-env": "^7.0.2",
     "electron": "^9.1.0",
     "ts-node": "^8.10.2",

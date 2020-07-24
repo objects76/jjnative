@@ -42,6 +42,25 @@ void js_throw_error(std::string_view pos, std::string_view msg)
         Napi::Error::New(_env, oss.str().c_str()).ThrowAsJavaScriptException();
     }
 }
+static Napi::FunctionReference _jslog;
+void jslog(const char* pos, int line, const char* fmt, ...) {
+    char buffer[4096];
+    int n = sprintf_s(buffer, sizeof(buffer), "[N] ");
+    va_list args;
+    va_start(args, fmt);
+    n += vsprintf_s(buffer+n, sizeof(buffer)-n-1, fmt, args);
+    va_end(args);
+
+    if (pos) {
+        sprintf_s(buffer+n, sizeof(buffer)-n-1, " at %s:%d", pos, line);
+    }
+
+    if (_jslog.IsEmpty())
+        LOGI0 << buffer;
+    else {
+        _jslog.Call({Napi::String::New(_jslog.Env(), buffer)});
+    }
+}
 //
 // } util codes
 //
@@ -52,14 +71,12 @@ bool pauseResumeKeybdMonitor(bool pause);
 
 static Napi::Value startKeyMonitor(const Napi::CallbackInfo &info)
 {
-    
     ThrowErrIfFailed(info.Length() == 1, info);
-
     expect_type(info[0], napi_valuetype::napi_bigint, info);
 
     bool lossless = false;
     auto jsNumber = AsArg<Napi::BigInt>(info[0]);
-    devlog("number= 0x%x, lossless=%d", jsNumber.Uint64Value(&lossless), lossless);
+    JSLOG("number= 0x%x, lossless=%d", jsNumber.Uint64Value(&lossless), lossless);
 
     auto result = startKeybdMonitor(jsNumber.Uint64Value(&lossless));
 
@@ -91,11 +108,26 @@ static Napi::Value resumeKeyMonitor(const Napi::CallbackInfo &info)
     return Napi::Value::From(info.Env(), result);
 }
 
-static Napi::Object Init(Napi::Env env, Napi::Object exports)
-{
-    _env = env;
 
-    static FILE* fp = klog::OpenFile(klog::GetLogPath("logs", TOSTR(NODE_GYP_MODULE_NAME)) );
+
+static Napi::Value initLib(const Napi::CallbackInfo &info)
+{
+    _env = info.Env();
+    ThrowErrIfFailed(info.Length() == 2, info);
+    // set logger to add log to js logger system.
+
+    _jslog.Reset();
+    if (auto& jv = info[0]; !jv.IsEmpty() && !jv.IsNull())
+        _jslog = AsArg<decltype(_jslog)>(jv);
+
+
+    std::string logDir;
+    if (auto& jv = info[1]; !jv.IsEmpty() && !jv.IsNull())
+        logDir = AsArg<std::string>(jv);
+
+    static FILE* fp = nullptr;
+    if (fp) fclose(fp);
+    fp = klog::OpenFile(klog::GetLogPath(logDir, TOSTR(NODE_GYP_MODULE_NAME)) );
 	klog::Out::A = [](const char* msg) {
 		::OutputDebugStringA(msg);
 		if (fp) fputs(msg, fp);
@@ -117,6 +149,12 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
     isDev = nodeenv && strcmp(nodeenv, "development") == 0;
     if (isDev) LOGI << "*** development mode ***";
 
+
+    return Napi::Value::From(info.Env(), true);
+}
+
+static Napi::Object Init(Napi::Env env, Napi::Object exports)
+{
     exports["startKeyMonitor"] = Napi::Function::New(env, startKeyMonitor);
     exports["stopKeyMonitor"] = Napi::Function::New(env, stopKeyMonitor);
     exports["pauseKeyMonitor"] = Napi::Function::New(env, pauseKeyMonitor);
@@ -135,6 +173,8 @@ static Napi::Object Init(Napi::Env env, Napi::Object exports)
     // arguments.cc
     Napi::Value ArrayBufferArgument(const Napi::CallbackInfo &info);
     exports["ArrayBufferArgument"] = Napi::Function::New(env, ArrayBufferArgument);
+
+    exports["init"] = Napi::Function::New(env, initLib);
 
     return exports;
 }

@@ -1,16 +1,18 @@
-import addon, { bigintFromHandle, NativeAddon } from "../lib/index";
 
-const logger = require("./Logger.js");
+import process from "process";
+import { overrideConsole } from "./Logger";
+import addon, { bigintFromHandle, NativeAddon } from "../index";
 
+overrideConsole(true);
 
 function test_main() {
-  logger.log("node version = ", process.versions.node);
-  logger.log("node_env=", process.env.NODE_ENV);
+  console.log("node version = ", process.versions.node);
+  console.log("node_env=", process.env.NODE_ENV);
 
   let buf8 = Buffer.from([0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0x00, 0xab]);
   let buf4 = Buffer.from([0x00, 0x00, 0x00, 0xff]);
-  logger.log(buf8, "0x" + bigintFromHandle(buf8).toString(16));
-  logger.log(buf4, "0x" + bigintFromHandle(buf4).toString(16));
+  console.log(buf8, "0x" + bigintFromHandle(buf8).toString(16));
+  console.log(buf4, "0x" + bigintFromHandle(buf4).toString(16));
 
   try {
     // startKeyMonitor with invalid window handle.
@@ -24,22 +26,25 @@ function test_main() {
 
 async function test_native() {
 
+  addon.init((console as any).log_native, null);
+  //addon.init(null, null);
+
   // passing array test
   {
     const array = new Int32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     try {
-      logger.log("ArrayBufferArgument=", addon.ArrayBufferArgument(array.buffer));
+      console.log("ArrayBufferArgument=", addon.ArrayBufferArgument(array.buffer));
+      console.log("ArrayBufferArgument=", addon.ArrayBufferArgument(array.buffer));
 
     } catch (error) {
       console.error(error);
     }
     return;
-
   }
 
   // promise test.
-  logger.log("result=", await addon.getPrimeAsync());
-  logger.log(addon.getPrimeSync());
+  console.log("result=", await addon.getPrimeAsync());
+  console.log(addon.getPrimeSync());
 
   // class from addon.
   const obj = new addon.NativeAddon(
@@ -56,9 +61,9 @@ async function test_native() {
   }
 
   // member function test.
-  logger.log(obj.tryCallByStoredReference());
+  console.log(obj.tryCallByStoredReference());
   try {
-    //logger.log(obj.tryCallByStoredFunction());
+    //console.log(obj.tryCallByStoredFunction());
   } catch (err) {
     console.error(err);
     console.error('This code crashes because JSFn is valid only inside the constructor function.')

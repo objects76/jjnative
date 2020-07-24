@@ -1,4 +1,4 @@
-
+import bindings from 'bindings';
 
 // defined in addon(c++).
 export interface NativeAddon {
@@ -26,10 +26,11 @@ interface IAddon {
   }
 
   ArrayBufferArgument(buf: ArrayBuffer): number;
+  init(fnlog: Function | null, logDir: string | null): boolean;
 }
 
 
-function bigintFromHandle(handle: Buffer) {
+export function bigintFromHandle(handle: Buffer) {
   // handle:Buffer
   //return buf.readBigUInt64LE(buf);
   let n = BigInt(handle.readUInt32LE(0));
@@ -41,7 +42,6 @@ function bigintFromHandle(handle: Buffer) {
   return n;
 }
 
-export default require("bindings")("jjnative.node") as IAddon;
 
-// helper functions.
-export { bigintFromHandle };
+export default bindings("jjnative.node") as IAddon;
+

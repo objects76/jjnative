@@ -30,7 +30,7 @@ public:
                 loopFuture.get();
             else {
                 const char* name[] = {"ready", "timeout", "deffered"};
-                LOGI << fmt::csprintf("wait failed: %s", name[(int)state]);
+                JSLOG("wait failed: %s", name[(int)state]);
             }
         }
         
@@ -39,7 +39,7 @@ public:
     }
     void Pause(bool pause)
     {
-        LOGI << fmt::csprintf("%s keybd monitor", pause?"Pause":"Resume");
+        JSLOG("%s keybd monitor", pause?"Pause":"Resume");
         pauseMonitor = pause;
     }
 
@@ -64,7 +64,7 @@ public:
 
         hTargetWnd = hWnd;
         loopFuture = std::async(std::launch::async, [this]{
-            klog::FnScope("loopFuture");
+            klog::FnScope("native-thread:loopFuture");
             loopThreadId = ::GetCurrentThreadId();
             for (MSG msg; GetMessageW(&msg, nullptr, 0, 0) > 0; );
             return 0;
@@ -146,7 +146,7 @@ bool startKeybdMonitor(int64_t hwndNumber)
         return false;
     }
 
-    LOGI << fmt::csprintf("setup(hwnd.%p) ok at %s", hTargetWnd, __FUNCTION__);
+    JSLOG("setup(hwnd.%p) ok", hTargetWnd);
     return true;
 }
 
@@ -159,7 +159,7 @@ bool stopKeybdMonitor()
         return true;
     }
 
-    LOGI << fmt::csprintf("No keybd monitor object at %s", __FUNCTION__);
+    JSLOG("No keybd monitor object");
     return false;
 }
 
@@ -172,7 +172,7 @@ bool pauseResumeKeybdMonitor(bool pause)
         return true;
     }
 
-    LOGI << fmt::csprintf("No keybd monitor object at %s", __FUNCTION__);
+    JSLOG("No keybd monitor object");
     return false;
 }
 

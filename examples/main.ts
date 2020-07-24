@@ -1,8 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const process = require('process');
-
-const { app } = require('electron');
+import path from 'path';
+import process from 'process';
+import { app } from 'electron';
 
 //
 // app env setup.
@@ -15,50 +13,49 @@ const { app } = require('electron');
     app.setPath('logs', logDir);
 
     const curtime = new Date().toLocaleString('en-US').replace(/, */, '-').replace(/[/: ]+/g, '_');
-    global.logPath = path.join(logDir, `${app.getName()}-${curtime}-${process.pid}.log`);
+    (global as any).logPath = path.join(logDir, `${app.getName()}-${curtime}-${process.pid}.log`);
 })();
 
 
 
-const windowStateKeeper = require('electron-window-state')
-const BrowserWindow = require('electron').BrowserWindow;
+import windowStateKeeper from 'electron-window-state';
+import { BrowserWindow } from 'electron';
+import { overrideConsole } from "./Logger";
+import addon, { bigintFromHandle } from '../index';
 
-const Logger = require('./Logger');
-const logger = new Logger(global.logPath, true);
+overrideConsole(true, (global as any).logPath);
+addon.init((console as any).log_native, null);
 
-const addonBase = require('../dist/index');
-const addon = addonBase.default;
-
-logger.log(addon);
-
+let mainWindow: BrowserWindow | null = null;
 function createMainWindow() {
 
     let state = windowStateKeeper({});
 
-    const win = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         x: state.x, y: state.y,
         width: state.width, height: state.height,
         webPreferences: {
             nodeIntegration: true,
+            enableRemoteModule: true,
         },
     });
     //win.loadURL('https://github.com');
-    win.loadURL(`file://${__dirname}/index.html`);
-    state.manage(win);
+    mainWindow.loadURL(`file://${__dirname}/index.html`);
+    state.manage(mainWindow);
 
-    win.webContents.openDevTools();
-    win.setMenu(null);
+    mainWindow.webContents.openDevTools();
+    mainWindow.setMenu(null);
 
 
-    win.on('closed', () => {
+    mainWindow.on('closed', () => {
         addon.stopKeyMonitor();
     });
 
-    win.on("focus", () => {
+    mainWindow.on("focus", () => {
         addon.resumeKeyMonitor();
-        logger.log('focused');
+        console.log('focused');
     });
-    win.on("blur", () => {
+    mainWindow.on("blur", () => {
         // const process = require('process');
         // const { crashReporter } = require('electron');
         // crashReporter.start({
@@ -70,29 +67,29 @@ function createMainWindow() {
         // process.crash();
 
         addon.pauseKeyMonitor();
-        logger.log('unfocused');
+        console.log('unfocused');
     });
 
     try {
-        logger.log('invalid start keymonitor');
+        console.log('invalid start keymonitor');
         addon.pauseKeyMonitor();
         addon.stopKeyMonitor();
     } catch (error) {
-        logger.error(error);
+        console.error(error);
     }
 
     try {
-        const hwndNumber = addonBase.bigintFromHandle(win.getNativeWindowHandle());
+        const hwndNumber = bigintFromHandle(mainWindow.getNativeWindowHandle());
         addon.startKeyMonitor(hwndNumber);
-        logger.log('start keymonitor');
+        console.log('start keymonitor');
     } catch (error) {
-        logger.error(error);
+        console.error(error);
     }
 }
 
 app.on('ready', createMainWindow);
 app.on('quit', (event, exitCode) => {
-    logger.log('quit:', exitCode);
+    console.log('quit:', exitCode);
 });
 
 app.on('window-all-closed', () => {

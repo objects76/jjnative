@@ -8,7 +8,7 @@
     "test": "node-gyp build -j 8 && yarn tsc2 && cross-env NODE_ENV=development node ./dist/examples/test.js",
     "testelec": "node-gyp build -j 8 && yarn tsc2 && cross-env NODE_ENV=development electron ./dist/examples/main.js",
     "build": "yarn tsc2 && node-gyp rebuild -j 8",
-    "config": "node-gyp clean && node-gyp rebuild -j 8",
+    "gypconfig": "node-gyp clean && node-gyp rebuild -j 8",
     "preinstall": "npm i node-addon-api",
     "tsc2": "tsc && cp examples/index.html dist/examples/"
   },
@@ -29,7 +29,7 @@
     "bindings": "^1.5.0",
     "electron-log": "^4.2.2",
     "electron-window-state": "^5.0.3",
-    "node-addon-api": "^3.0.1"
+    "node-addon-api": "^3.0.2"
   },
   "gypfile": true,
   "private": true,

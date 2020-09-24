@@ -1,9 +1,10 @@
 import eleclog from "electron-log";
 
-export function overrideConsole(isMain: boolean, logPath?: string) {
+export function overrideConsole(tag: string, logPath?: string) {
+    eleclog.transports.console.format = `{h}:{i}:{s}.{ms} ${tag}.[{level}] {text}`;
     if (logPath) {
         eleclog.transports.file.resolvePath = () => logPath;
-        eleclog.transports.file.format = `{h}:{i}:{s}.{ms} ${isMain ? 'M' : 'R'}.[{level}] {text}`;
+        eleclog.transports.file.format = `{h}:{i}:{s}.{ms} ${tag}.[{level}] {text}`;
         console.log(eleclog.transports.file.getFile().path);
     }
 

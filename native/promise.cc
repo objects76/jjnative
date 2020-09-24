@@ -1,12 +1,11 @@
 
 
 #include <napi.h>
-#include "log.h"
+#include "jslog.h"
 
 #ifdef WIN32
 #include <Windows.h>
 #endif
-
 
 #define PRIME_COUNT 10
 
@@ -60,7 +59,7 @@ public:
         deferred.Resolve(arr);
     }
 
-    void OnError(Napi::Error const & err)
+    void OnError(Napi::Error const &err)
     {
         FNSCOPE();
         LOGE << err.Message();

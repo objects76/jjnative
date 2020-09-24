@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "napi-helper.hpp"
 #include <string_view>
-#include "log.h"
+#include "jslog.h"
 
 Napi::Value ArrayBufferArgument(const Napi::CallbackInfo &info)
 {

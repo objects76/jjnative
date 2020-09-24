@@ -3,7 +3,7 @@ import process from "process";
 import { overrideConsole } from "./Logger";
 import addon, { bigintFromHandle, NativeAddon } from "../index";
 
-overrideConsole(true);
+overrideConsole('[N]');
 
 function test_main() {
   console.log("node version = ", process.versions.node);

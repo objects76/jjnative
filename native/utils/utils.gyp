@@ -11,7 +11,7 @@
         ['OS!="mac"', {'sources/': [['exclude', '-mac\\.*']]}],
         ['OS!="win"', {'sources/': [['exclude', '-win32\\.*']]}],
       ],
-      'include_dirs': ["<!(node -p \"require('node-addon-api').include\")"],
+      'include_dirs': ["<!@(node -p \"require('node-addon-api').include\")"],
       'dependencies': [],
       "defines": [ "NAPI_DISABLE_CPP_EXCEPTIONS", "STANDALONE" ],
 

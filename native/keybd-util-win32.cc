@@ -8,10 +8,9 @@
 #include <chrono>
 #include <future>
 #include <cstdlib>
-#include "log.h"
+#include "jslog.h"
 
 using namespace std::chrono_literals;
-
 
 class LLHook
 {
@@ -21,56 +20,68 @@ public:
     {
         FNSCOPE();
         if (loopThreadId)
-            EXPECT(::PostThreadMessageW(loopThreadId, WM_QUIT, 0, 0));
+            if (!::PostThreadMessageW(loopThreadId, WM_QUIT, 0, 0))
+                LOGE << "PostThreadMessage";
 
         if (loopFuture.valid())
         {
             auto state = loopFuture.wait_for(5s);
             if (state == std::future_status::ready)
                 loopFuture.get();
-            else {
-                const char* name[] = {"ready", "timeout", "deffered"};
+            else
+            {
+                const char *name[] = {"ready", "timeout", "deffered"};
                 JSLOG("wait failed: %s", name[(int)state]);
             }
         }
-        
+
         if (hKeyHook)
-            EXPECT(::UnhookWindowsHookEx(hKeyHook));
+            if (!::UnhookWindowsHookEx(hKeyHook))
+                LOGE << "UnhookWindowsHookEx";
     }
     void Pause(bool pause)
     {
-        JSLOG("%s keybd monitor", pause?"Pause":"Resume");
+        JSLOG("%s keybd monitor", pause ? "Pause" : "Resume");
         pauseMonitor = pause;
     }
 
-    bool hook(HWND hWnd) 
+    bool hook(HWND hWnd)
     {
-        static LLHook* _this = nullptr;
+        static LLHook *_this = nullptr;
         _this = this;
 
         Assert(hKeyHook == nullptr);
-        HMODULE hInstance = EXPECT(::GetModuleHandleA(TOSTR(NODE_GYP_MODULE_NAME) ".node"));
+        HMODULE hInstance = ::GetModuleHandleA(TOSTR(NODE_GYP_MODULE_NAME) ".node");
+        if (!hInstance)
+            LOGE << "GetModuleHandlA";
+
         hKeyHook = ::SetWindowsHookExW(
             WH_KEYBOARD_LL, [](int nCode, WPARAM wParam, LPARAM lParam) -> LRESULT {
                 return _this->LLKeyboardProc(nCode, wParam, lParam);
             },
             hInstance, 0);
 
-        if (!hKeyHook) 
+        if (!hKeyHook)
         {
             js_throw_error(__FUNCTION__, fmt::csprintf("keyhook failed: errno=%d", GetLastError()));
             return false;
         }
 
         hTargetWnd = hWnd;
-        loopFuture = std::async(std::launch::async, [this]{
+        loopFuture = std::async(std::launch::async, [this] {
             klog::FnScope("native-thread:loopFuture");
             loopThreadId = ::GetCurrentThreadId();
-            for (MSG msg; GetMessageW(&msg, nullptr, 0, 0) > 0; );
+            for (MSG msg; GetMessageW(&msg, nullptr, 0, 0) > 0;)
+                ;
             return 0;
         });
 
-        return EXPECT(loopFuture.valid());
+        if (!loopFuture.valid())
+        {
+            LOGE << "invalid loopFuture";
+            return false;
+        }
+        return true;
     }
 
 private:
@@ -85,30 +96,40 @@ private:
             case WM_KEYDOWN:
             case WM_KEYUP:
                 const auto kbdll = (KBDLLHOOKSTRUCT *)lParam;
-                switch (kbdll->vkCode) {
+                switch (kbdll->vkCode)
+                {
                 case VK_SNAPSHOT: // PrtSc/SysRq
-                case VK_LWIN: case VK_RWIN:
-                case VK_LMENU: case VK_RMENU:
-                case VK_LCONTROL: case VK_RCONTROL:
+                case VK_LWIN:
+                case VK_RWIN:
+                case VK_LMENU:
+                case VK_RMENU:
+                case VK_LCONTROL:
+                case VK_RCONTROL:
                     if (isDev)
                         LOGI << fmt::csprintf("msg=%04X, key.%x block %s", wParam, kbdll->vkCode, ((wParam & 1) ? "UP" : "DOWN"));
 
                     const bool keyup = !!(wParam & 1);
                     const bool extended = (kbdll->flags & LLKHF_EXTENDED);
-                    lParam = (1<<30) | ((kbdll->scanCode&0xff) << 16) | 1;
-                    if (keyup) lParam |= 1<<31;
-                    if (extended) lParam |= 1<<24;
-                    if (wParam >= WM_SYSKEYDOWN) {
+                    lParam = (1 << 30) | ((kbdll->scanCode & 0xff) << 16) | 1;
+                    if (keyup)
+                        lParam |= 1 << 31;
+                    if (extended)
+                        lParam |= 1 << 24;
+                    if (wParam >= WM_SYSKEYDOWN)
+                    {
                         const bool altDown = (kbdll->flags & LLKHF_ALTDOWN);
-                        if (altDown) lParam |= 1<<29;
+                        if (altDown)
+                            lParam |= 1 << 29;
                     }
 
-                    if (!IsWindow(hTargetWnd)) {
+                    if (!IsWindow(hTargetWnd))
+                    {
                         LOGI << fmt::csprintf("hwnd.%p is not a window", hTargetWnd);
                         break;
                     }
-                    
-                    EXPECT(::PostMessageW(hTargetWnd, wParam, kbdll->vkCode, lParam));
+
+                    if (!::PostMessageW(hTargetWnd, wParam, kbdll->vkCode, lParam))
+                        LOGE << "PostMessageW";
                     return TRUE;
                 }
             }
@@ -122,9 +143,6 @@ private:
     HWND hTargetWnd = nullptr;
     HHOOK hKeyHook = nullptr;
 };
-
-
-
 
 static std::unique_ptr<LLHook> _keybdMonitor;
 bool startKeybdMonitor(int64_t hwndNumber)
@@ -167,7 +185,7 @@ bool pauseResumeKeybdMonitor(bool pause)
 {
     if (_keybdMonitor)
     {
-        
+
         _keybdMonitor->Pause(pause);
         return true;
     }

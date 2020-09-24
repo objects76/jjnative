@@ -23,7 +23,7 @@ import { BrowserWindow } from 'electron';
 import { overrideConsole } from "./Logger";
 import addon, { bigintFromHandle } from '../index';
 
-overrideConsole(true, (global as any).logPath);
+overrideConsole('[M]', (global as any).logPath);
 addon.init((console as any).log_native, null);
 
 let mainWindow: BrowserWindow | null = null;

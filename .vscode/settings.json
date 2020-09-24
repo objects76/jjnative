@@ -64,6 +64,9 @@
         "fstream": "cpp",
         "iostream": "cpp",
         "set": "cpp",
-        "xtree": "cpp"
-    }
+        "xtree": "cpp",
+        "compare": "cpp",
+        "cstdarg": "cpp"
+    },
+    "python.formatting.provider": "black"
 }

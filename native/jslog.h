@@ -12,8 +12,6 @@
 extern bool isDev;
 #include "utils/logger.h"
 
-#define FNSCOPE() klog::FnScope fnscope(__FUNCTION__)
-
 #define devlog(...) \
     if (isDev)      \
     LOGV << fmt::csprintf(__VA_ARGS__)

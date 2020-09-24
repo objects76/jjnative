@@ -9,14 +9,14 @@
 #include "logger.h"
 
 template <typename T> 
-class sync_obj
+class syncronized_obj
 {
 private:
 	mutable T t;
 	mutable std::mutex m;
 
-	sync_obj(const sync_obj&) = delete;
-	sync_obj& operator=(const sync_obj&) = delete;
+	syncronized_obj(const syncronized_obj&) = delete;
+	syncronized_obj& operator=(const syncronized_obj&) = delete;
 public:
 	const auto get() const {
 		struct proxy {
@@ -32,12 +32,12 @@ public:
 	auto operator -> () { return get(); }
 
 	template< typename ...CtorArgs>
-	sync_obj(CtorArgs ...args) : t(args...) {}
+	syncronized_obj(CtorArgs ...args) : t(args...) {}
 
 
 	static void test() {
 		using namespace std::chrono_literals;
-		sync_obj<std::vector<int>> obj;
+		syncronized_obj<std::vector<int>> obj;
 
 
 		std::vector<std::thread> threads;

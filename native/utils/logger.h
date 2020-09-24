@@ -9,104 +9,36 @@
 #include <cstdio>
 #include <cstdlib>
 #include <sstream>
-#include <cstdarg>
 #include <filesystem>
 
 #include <chrono>
 #include <ctime>
+using namespace std::chrono_literals;
 
-#define LOGV klog::LogStream('V', __basename__, __LINE__).stream()
-#define LOGD klog::LogStream('D', __basename__, __LINE__).stream()
-#define LOGI klog::LogStream('I', __basename__, __LINE__).stream()
-#define LOGW klog::LogStream('W', __basename__, __LINE__).stream()
-#define LOGE klog::LogStream('E', __basename__, __LINE__).stream()
-#define LOGV0 klog::LogStream('V', nullptr, 0).stream()
-#define LOGD0 klog::LogStream('D', nullptr, 0).stream()
-#define LOGI0 klog::LogStream('I', nullptr, 0).stream()
-#define LOGW0 klog::LogStream('W', nullptr, 0).stream()
-#define LOGE0 klog::LogStream('E', nullptr, 0).stream()
+#define LOGV ::klog::LogStream('V', __basename__, __LINE__).stream()
+#define LOGD ::klog::LogStream('D', __basename__, __LINE__).stream()
+#define LOGI ::klog::LogStream('I', __basename__, __LINE__).stream()
+#define LOGW ::klog::LogStream('W', __basename__, __LINE__).stream()
+#define LOGE ::klog::LogStream('E', __basename__, __LINE__).stream()
 
-#define __basename__ ([] { constexpr auto x = klog::filename(__FILE__); return x; }())
+#define LOGV0 ::klog::LogStream('V', nullptr, 0).stream()
+#define LOGD0 ::klog::LogStream('D', nullptr, 0).stream()
+#define LOGI0 ::klog::LogStream('I', nullptr, 0).stream()
+#define LOGW0 ::klog::LogStream('W', nullptr, 0).stream()
+#define LOGE0 ::klog::LogStream('E', nullptr, 0).stream()
+
 #define Assert(c) \
 	if (!(c))     \
-	klog::AssertStream(__basename__, __LINE__, GetLastError()).stream() << "Assert: " #c << '\n'
+	::klog::AssertStream(__basename__, __LINE__, GetLastError()).stream() << "Assert: " #c << '\n'
 
-namespace fmt
-{
-	inline std::string csprintf(const char *fmt, ...)
-	{
-		std::array<char, 4096> buf;
-		std::va_list args;
-		va_start(args, fmt);
-		int n = std::vsnprintf(buf.data(), buf.size() - 1, fmt, args);
-		va_end(args);
-
-		return std::string(buf.data(), n);
-	}
-
-} // namespace fmt
-
-struct tm2 : std::tm
-{
-	int tm_millisec;
-};
-
-inline tm2 localtime2()
-{
-	using namespace std::chrono;
-	using namespace std::chrono_literals;
-	system_clock::time_point now = system_clock::now();
-	system_clock::duration tp = now.time_since_epoch();
-
-	tp -= duration_cast<seconds>(tp);
-
-	time_t tt = system_clock::to_time_t(now);
-
-	tm2 t;
-	*((tm *)&t) = *std::localtime(&tt);
-	t.tm_millisec = int(tp / 1ms);
-	t.tm_mon += 1;
-	t.tm_year += 1900;
-
-	return t;
-}
-
-class elapsed
-{
-	using clock = std::chrono::steady_clock;
-	clock::time_point tp = clock::now();
-
-public:
-	std::chrono::milliseconds get()
-	{
-		return std::chrono::duration_cast<std::chrono::duration<uint32_t, std::milli>>(clock::now() - tp);
-		//return std::chrono::duration_cast<std::chrono::milliseconds>(tp - old);
-	}
-
-	void update()
-	{
-		tp = clock::now();
-	}
-
-	auto get_and_update()
-	{
-		auto n = get();
-		update();
-		return n;
-	}
-};
+#define FNSCOPE() \
+	::klog::FnScope l(__FUNCTION__)
 
 //
 // impl.
 //
-#ifndef kTag
-#define kTag "    "
-#endif
-
-#ifndef TOSTR
-#define TOSTR2(x) #x
-#define TOSTR(x) TOSTR2(x)
-#endif
+#include "staging.h"
+#define __basename__ ([] { constexpr auto x = ::klog::filename(__FILE__); return x; }())
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
@@ -120,8 +52,7 @@ inline int getPid() { return ::GetCurrentProcessId(); }
 #else
 #include <errno.h>
 #undef __stdcall
-#define __stdcall															// null
-#define OutputDebugStringA [](const char *msg) { std::fputs(msg, stdout); } // NL added automatically.
+#define __stdcall // null
 #define GetLastError() (errno)
 #endif
 
@@ -129,7 +60,11 @@ namespace klog
 {
 	struct Out
 	{
-		inline static void(__stdcall *A)(const char *) = OutputDebugStringA;
+#ifdef _WIN32
+		inline static void(__stdcall *A)(const char *) = ::OutputDebugStringA;
+#else
+		inline static void (*A)(const char *) = [](const char *msg) { std::fputs(msg, stdout); }
+#endif
 	};
 
 	constexpr const char *eos(const char *str)
@@ -160,9 +95,9 @@ namespace klog
 		{
 			char buffer[128];
 			auto t = localtime2();
-			snprintf(buffer, 128, "%c.%-5.5s  %-8d %02u:%02u:%02u.%03u   ", level, kTag, gettid(), t.tm_hour, t.tm_min, t.tm_sec, t.tm_millisec);
+			int n = std::snprintf(buffer, sizeof(buffer), "%c.%-5.5s  %-8d %02u:%02u:%02u.%03u   ", level, kTag, gettid(), t.tm_hour, t.tm_min, t.tm_sec, t.tm_millisec);
 
-			oss_ << buffer;
+			oss_ << std::string_view(buffer, n);
 		}
 
 		~LogStream()
@@ -178,7 +113,7 @@ namespace klog
 		inline std::string str() { return oss_.str(); }
 	};
 
-#ifdef _WIN32
+#ifdef _WIN32 // error_category
 	class error_category : public std::error_category
 	{
 	public:
@@ -225,9 +160,11 @@ namespace klog
 	}
 #endif // _WIN32
 
-	struct FnScope
+	class FnScope
 	{
 		const char *_str;
+
+	public:
 		FnScope(const char *s) : _str(s) { LOGD0 << "{ " << _str; }
 		~FnScope() { LOGD0 << "} " << _str; }
 	};
@@ -243,7 +180,7 @@ namespace klog
 			if (en_ != 0)
 			{
 				log_->stream()
-					<< ": " << std::error_code(en_, error_category()).message() << '\n';
+					<< ": " << std::error_code(en_, klog::error_category()).message() << '\n';
 			}
 		}
 #pragma warning(disable : 4722)
@@ -265,7 +202,7 @@ namespace klog
 		ErrnoStream(const char *f, int l, uint32_t en = ::GetLastError()) : LogStream('E', f, l)
 		{
 			stream()
-				<< std::error_code(en, klog::error_category()).message() << "\n\t";
+				<< std::error_code(en, ::klog::error_category()).message() << "\n\t";
 		}
 	};
 

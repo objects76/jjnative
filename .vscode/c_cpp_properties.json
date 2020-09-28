@@ -2,30 +2,23 @@
   "env": {
     "myDefaultIncludePath": [
       "${workspaceFolder}",
-      "${workspaceFolder}/node_modules/node-addon-api"
+      "${workspaceFolder}/node_modules/node-addon-api",
+      "C:\\Users\\jjkim\\AppData\\Local\\node-gyp\\Cache\\12.18.3\\include\\node"
     ]
   },
   "configurations": [
     {
       "name": "Win32",
-      "defines": [
-        "WIN32",
-        "STANDALONE"
-      ],
+      "defines": ["WIN32"],
       "intelliSenseMode": "msvc-x64",
       "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Professional/VC/Tools/MSVC/14.25.28610/bin/Hostx64/x64/cl.exe",
       "cStandard": "c11",
       "cppStandard": "c++17",
-      "includePath": [
-        "${myDefaultIncludePath}"
-      ]
+      "includePath": ["${myDefaultIncludePath}"]
     },
     {
       "name": "Mac",
-      "defines": [
-        "APPLE",
-        "STANDALONE"
-      ],
+      "defines": ["APPLE"],
       "cStandard": "c11",
       "cppStandard": "c++17"
     }

@@ -1,19 +1,4 @@
 #pragma once
-#include <memory>
-#include <iostream>
-#include <chrono>
-#include <array>
-#include <string>
-#include <string_view>
-
-#include <cstdio>
-#include <cstdlib>
-#include <sstream>
-#include <filesystem>
-
-#include <chrono>
-#include <ctime>
-using namespace std::chrono_literals;
 
 #define LOGV ::klog::LogStream('V', __basename__, __LINE__).stream()
 #define LOGD ::klog::LogStream('D', __basename__, __LINE__).stream()
@@ -37,6 +22,21 @@ using namespace std::chrono_literals;
 //
 // impl.
 //
+#include <memory>
+#include <iostream>
+#include <chrono>
+#include <array>
+#include <string>
+#include <string_view>
+
+#include <cstdio>
+#include <cstdlib>
+#include <sstream>
+#include <filesystem>
+
+#include <chrono>
+#include <ctime>
+using namespace std::chrono_literals;
 #include "staging.h"
 #define __basename__ ([] { constexpr auto x = ::klog::filename(__FILE__); return x; }())
 
@@ -215,37 +215,3 @@ namespace klog
 	}
 
 } // namespace klog
-
-inline std::string WideToUtf8(const std::wstring_view &wstr)
-{
-	if (wstr.length() == 0)
-		return "";
-	size_t len;
-	std::string buf(wstr.length() * 4 + 16, 0);
-#ifdef _WIN32
-	len = ::WideCharToMultiByte(CP_UTF8, 0, wstr.data(), -1, buf.data(), (uint32_t)buf.length(), NULL, NULL);
-	len -= 1;
-#else
-	len = std::wcstombs(buf.data(), wstr.data(), wstr.length()); // i including \0 char.
-#endif
-	Assert(len > 0);
-	buf.resize(len);
-	return buf;
-}
-
-inline std::string WideToAnsi(const std::wstring_view &wstr)
-{
-	if (wstr.length() == 0)
-		return "";
-	size_t len;
-	std::string buf(wstr.length() * 4 + 16, 0);
-#ifdef _WIN32
-	len = ::WideCharToMultiByte(CP_ACP, 0, wstr.data(), -1, buf.data(), (uint32_t)buf.length(), NULL, NULL);
-	len -= 1;
-#else
-	len = std::wcstombs(buf.data(), wstr.data(), wstr.length());
-#endif
-	Assert(len > 0);
-	buf.resize(len);
-	return buf;
-}

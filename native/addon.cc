@@ -7,6 +7,9 @@
 #include <Windows.h>
 #endif
 
+#include <cstdio>
+#include <cstdlib>
+
 #include "napi-helper.hpp"
 //
 // { util codes
@@ -48,15 +51,15 @@ static Napi::FunctionReference _jslog;
 void jslog(const char *pos, int line, const char *fmt, ...)
 {
     char buffer[4096];
-    int n = sprintf_s(buffer, sizeof(buffer), "[N] ");
+    int n = std::snprintf(buffer, sizeof(buffer), "[N] ");
     va_list args;
     va_start(args, fmt);
-    n += vsprintf_s(buffer + n, sizeof(buffer) - n - 1, fmt, args);
+    n += std::vsnprintf(buffer + n, sizeof(buffer) - n - 1, fmt, args);
     va_end(args);
 
     if (pos)
     {
-        sprintf_s(buffer + n, sizeof(buffer) - n - 1, " at %s:%d", pos, line);
+        std::snprintf(buffer + n, sizeof(buffer) - n - 1, " at %s:%d", pos, line);
     }
 
     if (_jslog.IsEmpty())

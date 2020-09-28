@@ -1,6 +1,6 @@
 {
   "name": "jjnative",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "native support for electron",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -9,7 +9,7 @@
     "testelec": "node-gyp build -j 8 && yarn tsc2 && cross-env NODE_ENV=development electron ./dist/examples/main.js",
     "build": "yarn tsc2 && node-gyp rebuild -j 8",
     "gypconfig": "node-gyp clean && node-gyp rebuild -j 8",
-    "preinstall": "npm i node-addon-api",
+    "preinstall__": "npm i node-addon-api",
     "tsc2": "tsc && cp examples/index.html dist/examples/"
   },
   "repository": {

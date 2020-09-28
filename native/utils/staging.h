@@ -12,6 +12,11 @@
 
 using namespace std::chrono_literals;
 
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
 // thread::join() with timeout.
 inline bool timed_join(std::thread &thread, std::chrono::seconds timeout_sec = 5s)
 {
@@ -98,3 +103,33 @@ public:
 #define TOSTR2(x) #x
 #define TOSTR(x) TOSTR2(x)
 #endif
+
+inline std::string WideToUtf8(const std::wstring_view &wstr)
+{
+	if (wstr.length() == 0)
+		return "";
+	size_t len;
+	std::string buf(wstr.length() * 4 + 16, 0);
+#ifdef _WIN32
+	len = ::WideCharToMultiByte(CP_UTF8, 0, wstr.data(), -1, buf.data(), (uint32_t)buf.length(), NULL, NULL);
+#else
+	len = std::wcstombs(buf.data(), wstr.data(), wstr.length()); // i including \0 char.
+#endif
+	buf.resize(len);
+	return buf;
+}
+
+inline std::string WideToAnsi(const std::wstring_view &wstr)
+{
+	if (wstr.length() == 0)
+		return "";
+	size_t len;
+	std::string buf(wstr.length() * 4 + 16, 0);
+#ifdef _WIN32
+	len = ::WideCharToMultiByte(CP_ACP, 0, wstr.data(), -1, buf.data(), (uint32_t)buf.length(), NULL, NULL);
+#else
+	len = std::wcstombs(buf.data(), wstr.data(), wstr.length());
+#endif
+	buf.resize(len);
+	return buf;
+}
